@@ -32,6 +32,8 @@ import {
   loadFromStorage,  // Loads data from localStorage
   saveToStorage,    // Saves data to localStorage
   openProjectAsPDF, // Opens a project profile as a PDF
+  INITIAL_PROJECTS,
+  INITIAL_EQUIPMENT,
 } from "./Utils";
 
 
@@ -995,8 +997,8 @@ function SettingsPanel({ settings, onSave, onClose }) {
 export default function MonitoringDashboard() {
 
   // ── Persisted State (automatically saved to localStorage) ─────────────────
-  const [projects,      setProjects]      = usePersistedState(LS_KEYS.projects,      []);
-  const [equipment,     setEquipment]     = usePersistedState(LS_KEYS.equipment,     []);
+  const [projects, setProjects] = usePersistedState(LS_KEYS.projects, INITIAL_PROJECTS);
+ const [equipment, setEquipment] = usePersistedState(LS_KEYS.equipment, INITIAL_EQUIPMENT);
   const [notifications, setNotifications] = usePersistedState(LS_KEYS.notifications, []);
   const [settings,      setSettings]      = usePersistedState(LS_KEYS.settings,      DEFAULT_SETTINGS);
 
