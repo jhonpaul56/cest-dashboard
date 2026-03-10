@@ -1308,6 +1308,25 @@ export default function MonitoringDashboard() {
             <span>🚪</span> Logout
           </button>
         </div>
+
+        {/* Sidebar Footer */}
+        <div style={{
+          padding: "12px 16px",
+          borderTop: "1px solid #f3f4f6",
+          background: "#f9fafb",
+        }}>
+          <div style={{ fontSize: 10, fontWeight: 800, color: "#1e3a8a", marginBottom: 2 }}>
+            CEST 2.0
+          </div>
+          <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid #e5e7eb" }}>
+            <div style={{ fontSize: 9, color: "#d1d5db" }}>
+              © {new Date().getFullYear()} DOST
+            </div>
+             <div style={{ fontSize: 9, color: "#9ca3af", lineHeight: 1.5 }}>
+            Community Empowerment<br />thru Science &amp; Technology
+          </div>
+          </div>
+        </div>
       </div>
 
 
@@ -1406,42 +1425,156 @@ export default function MonitoringDashboard() {
                 </select>
               </div>
 
-              {/* ── Charts (toggle in Settings → Show Charts) ── */}
+               {/* ── Charts (toggle in Settings → Show Charts) ── */}
               {settings.showCharts && (
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 14, marginBottom: 18 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 18 }}>
 
                   {/* Bar chart — Budget by Municipality */}
-                  <div style={{ background: "#fff", borderRadius: 12, padding: "16px 18px", boxShadow: "0 1px 8px rgba(0,0,0,0.06)" }}>
-                    <h3 style={{ margin: "0 0 12px", fontSize: 13, color: "#374151", fontWeight: 700 }}>Budget by Municipality</h3>
-                    <ResponsiveContainer width="100%" height={200}>
-                      <BarChart data={barData}>
-                        <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#6b7280" }} />
-                        <YAxis tick={{ fontSize: 11, fill: "#6b7280" }} tickFormatter={fmtChart} />
-                        <Tooltip formatter={v => [fmtChart(v), "Budget"]} />
-                        <Bar dataKey="budget" fill="#1e40af" radius={[4, 4, 0, 0]} />
+                  <div style={{ background: "#fff", borderRadius: 14, padding: "20px 22px", boxShadow: "0 2px 12px rgba(0,0,0,0.08)" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                      <div>
+                        <h3 style={{ margin: 0, fontSize: 14, color: "#111827", fontWeight: 800 }}>Budget by Municipality</h3>
+                        <p style={{ margin: "3px 0 0", fontSize: 11, color: "#9ca3af" }}>Total funds allocated per area</p>
+                      </div>
+                      <div style={{ background: "#eff6ff", borderRadius: 8, padding: "4px 10px", fontSize: 11, fontWeight: 700, color: "#1e40af" }}>
+                        {barData.length} areas
+                      </div>
+                    </div>
+                    <ResponsiveContainer width="100%" height={380}>
+                      <BarChart data={barData} margin={{ top: 10, right: 10, left: 10, bottom: 80 }}>
+                        <defs>
+                          {barData.map((_, i) => {
+                            const gradients = [
+                              ["#6366f1","#818cf8"],
+                              ["#ec4899","#f472b6"],
+                              ["#f59e0b","#fbbf24"],
+                              ["#10b981","#34d399"],
+                              ["#3b82f6","#60a5fa"],
+                              ["#ef4444","#f87171"],
+                              ["#8b5cf6","#a78bfa"],
+                              ["#14b8a6","#2dd4bf"],
+                            ];
+                            const [c1, c2] = gradients[i % gradients.length];
+                            return (
+                              <linearGradient key={i} id={`barGrad${i}`} x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor={c1} stopOpacity={1} />
+                                <stop offset="100%" stopColor={c2} stopOpacity={0.75} />
+                              </linearGradient>
+                            );
+                          })}
+                        </defs>
+                         <XAxis
+                          dataKey="name"
+                          tick={{ fontSize: 11, fill: "#6b7280", fontWeight: 600 }}
+                          angle={-40}
+                          textAnchor="end"
+                          interval={0}
+                          tickLine={false}
+                          axisLine={{ stroke: "#e5e7eb" }}
+                          height={20}
+                          dx={-4}
+                          dy={8}
+                        />
+                        <YAxis
+                          tick={{ fontSize: 11, fill: "#6b7280" }}
+                          tickFormatter={fmtChart}
+                          tickLine={false}
+                          axisLine={false}
+                          width={30}
+                        />
+                        <Tooltip
+                          formatter={v => [fmtChart(v), "Budget"]}
+                          contentStyle={{ borderRadius: 10, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.15)", fontSize: 12 }}
+                          cursor={{ fill: "rgba(99,102,241,0.06)" }}
+                        />
+                        <Bar dataKey="budget" radius={[6, 6, 0, 0]} maxBarSize={52} label={{ position: "top", formatter: fmtChart, fontSize: 10, fill: "#6b7280", fontWeight: 700 }}>
+                          {barData.map((_, i) => (
+                            <Cell key={i} fill={`url(#barGrad${i})`} />
+                          ))}
+                        </Bar>
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
 
                   {/* Pie chart — Projects by Component */}
-                  <div style={{ background: "#fff", borderRadius: 12, padding: "16px 18px", boxShadow: "0 1px 8px rgba(0,0,0,0.06)" }}>
-                    <h3 style={{ margin: "0 0 12px", fontSize: 13, color: "#374151", fontWeight: 700 }}>Projects by Component</h3>
+                  <div style={{ background: "#fff", borderRadius: 14, padding: "20px 22px", boxShadow: "0 2px 12px rgba(0,0,0,0.08)" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                      <div>
+                        <h3 style={{ margin: 0, fontSize: 14, color: "#111827", fontWeight: 800 }}>Projects by Component</h3>
+                        <p style={{ margin: "3px 0 0", fontSize: 11, color: "#9ca3af" }}>Distribution across CEST 2.0 components</p>
+                      </div>
+                      <div style={{ background: "#f0fdf4", borderRadius: 8, padding: "4px 10px", fontSize: 11, fontWeight: 700, color: "#16a34a" }}>
+                        {projects.length} total
+                      </div>
+                    </div>
                     {compCounts.length > 0 ? (
-                      <ResponsiveContainer width="100%" height={200}>
+                      <ResponsiveContainer width="100%" height={320}>
                         <PieChart>
-                          <Pie data={compCounts} cx="45%" cy="50%" outerRadius={70} dataKey="value" label={({ name, value }) => `${name}:${value}`} labelLine={false} fontSize={10}>
-                            {compCounts.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                          <defs>
+                            {compCounts.map((_, i) => {
+                              const gradients = [
+                                ["#6366f1","#818cf8"],
+                                ["#ec4899","#f472b6"],
+                                ["#f59e0b","#fbbf24"],
+                                ["#10b981","#34d399"],
+                                ["#3b82f6","#60a5fa"],
+                                ["#ef4444","#f87171"],
+                                ["#8b5cf6","#a78bfa"],
+                                ["#14b8a6","#2dd4bf"],
+                              ];
+                              const [c1, c2] = gradients[i % gradients.length];
+                              return (
+                                <linearGradient key={i} id={`pieGrad${i}`} x1="0" y1="0" x2="1" y2="1">
+                                  <stop offset="0%" stopColor={c1} />
+                                  <stop offset="100%" stopColor={c2} />
+                                </linearGradient>
+                              );
+                            })}
+                          </defs>
+                          <Pie
+                            data={compCounts}
+                            cx="50%"
+                            cy="46%"
+                            outerRadius={100}
+                            innerRadius={48}
+                            dataKey="value"
+                            paddingAngle={3}
+                            label={({ name, value, percent }) =>
+                              `${name}: ${value} (${(percent * 100).toFixed(0)}%)`
+                            }
+                            labelLine={{ stroke: "#d1d5db", strokeWidth: 1 }}
+                            fontSize={11}
+                          >
+                            {compCounts.map((_, i) => (
+                              <Cell key={i} fill={`url(#pieGrad${i})`} stroke="none" />
+                            ))}
                           </Pie>
-                          <Legend iconSize={9} wrapperStyle={{ fontSize: 10 }} />
-                          <Tooltip />
+                          <Legend
+                            iconType="circle"
+                            iconSize={9}
+                            wrapperStyle={{ fontSize: 11, paddingTop: 8 }}
+                            formatter={(value, entry) => (
+                              <span style={{ color: "#374151", fontWeight: 600 }}>
+                                {value} — {entry.payload.value} project{entry.payload.value !== 1 ? "s" : ""}
+                              </span>
+                            )}
+                          />
+                          <Tooltip
+                            formatter={(value, name) => [`${value} project${value !== 1 ? "s" : ""}`, name]}
+                            contentStyle={{ borderRadius: 10, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.15)", fontSize: 12 }}
+                          />
                         </PieChart>
                       </ResponsiveContainer>
                     ) : (
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 200, color: "#9ca3af", fontSize: 13 }}>No data</div>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 280, color: "#9ca3af", gap: 8 }}>
+                        <span style={{ fontSize: 36 }}>📭</span>
+                        <span style={{ fontSize: 13 }}>No component data yet</span>
+                      </div>
                     )}
                   </div>
 
                 </div>
+              
               )}
 
               {/* ── Projects Table with Grouped Headers ── */}
