@@ -89,6 +89,24 @@ export function saveToStorage(key, value) {
   }
 }
 
+// ── Open uploaded file in new tab or trigger download ──
+export function openUploadedFile(fileData, fileName) {
+  if (!fileData) return;
+  if (
+    fileData.startsWith("data:application/pdf") ||
+    fileData.startsWith("data:image")
+  ) {
+    window.open(fileData, "_blank");
+  } else {
+    const link = document.createElement("a");
+    link.href = fileData;
+    link.download = fileName || "project-file";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+}
+
 // ── Open project profile as PDF in new tab ──
 export function openProjectAsPDF(p) {
   const compBadges = p.components.map(c => `
@@ -236,12 +254,6 @@ export function openProjectAsPDF(p) {
 
 
 // ─── HARDCODED INITIAL PROJECTS (from spreadsheet) ────────────────────────────
-// Ginagamit bilang fallback ng usePersistedState kapag walang laman ang localStorage
-// Sa MonitoringDashboard.jsx, palitan ang:
-//   usePersistedState(LS_KEYS.projects, [])
-// ng:
-//   usePersistedState(LS_KEYS.projects, INITIAL_PROJECTS)
-
 export const INITIAL_PROJECTS = [
 
   // ── 2020 ──────────────────────────────────────────────────────────────────
@@ -256,6 +268,7 @@ export const INITIAL_PROJECTS = [
     components: ["sel"],
     communities: ["artisanal"],
     status: "Finished",
+    fileData: null, fileName: "", fileType: "",
     beneficiaries: { male: 0, female: 0, ips: 0, fourps: 0, pwd: 0, senior: 0, total: 0 },
     stakeholders: { lgu: 0, plgu: 0, blgu: 0, pnp: 0, suc: 0, others: 0, othersLabel: "" },
   },
@@ -270,6 +283,7 @@ export const INITIAL_PROJECTS = [
     components: ["sel", "hn", "hrd", "drrm"],
     communities: ["artisanal"],
     status: "Finished",
+    fileData: null, fileName: "", fileType: "",
     beneficiaries: { male: 0, female: 0, ips: 0, fourps: 0, pwd: 0, senior: 0, total: 4 },
     stakeholders: { lgu: 1, plgu: 0, blgu: 0, pnp: 0, suc: 0, others: 0, othersLabel: "" },
   },
@@ -284,6 +298,7 @@ export const INITIAL_PROJECTS = [
     components: ["sel"],
     communities: ["indigenous"],
     status: "Finished",
+    fileData: null, fileName: "", fileType: "",
     beneficiaries: { male: 0, female: 0, ips: 0, fourps: 0, pwd: 0, senior: 0, total: 0 },
     stakeholders: { lgu: 0, plgu: 0, blgu: 0, pnp: 0, suc: 0, others: 0, othersLabel: "" },
   },
@@ -298,6 +313,7 @@ export const INITIAL_PROJECTS = [
     components: ["sel", "hrd", "drrm"],
     communities: ["artisanal"],
     status: "Finished",
+    fileData: null, fileName: "", fileType: "",
     beneficiaries: { male: 0, female: 0, ips: 0, fourps: 0, pwd: 0, senior: 0, total: 3 },
     stakeholders: { lgu: 1, plgu: 0, blgu: 0, pnp: 0, suc: 0, others: 0, othersLabel: "" },
   },
@@ -312,6 +328,7 @@ export const INITIAL_PROJECTS = [
     components: ["sel", "hrd", "drrm"],
     communities: [],
     status: "Finished",
+    fileData: null, fileName: "", fileType: "",
     beneficiaries: { male: 0, female: 0, ips: 0, fourps: 0, pwd: 0, senior: 0, total: 3 },
     stakeholders: { lgu: 1, plgu: 0, blgu: 0, pnp: 0, suc: 0, others: 0, othersLabel: "" },
   },
@@ -326,6 +343,7 @@ export const INITIAL_PROJECTS = [
     components: ["sel", "hrd", "drrm"],
     communities: ["womens"],
     status: "Finished",
+    fileData: null, fileName: "", fileType: "",
     beneficiaries: { male: 0, female: 0, ips: 0, fourps: 0, pwd: 0, senior: 0, total: 3 },
     stakeholders: { lgu: 0, plgu: 0, blgu: 0, pnp: 0, suc: 0, others: 0, othersLabel: "" },
   },
@@ -340,6 +358,7 @@ export const INITIAL_PROJECTS = [
     components: ["sel"],
     communities: ["artisanal"],
     status: "Finished",
+    fileData: null, fileName: "", fileType: "",
     beneficiaries: { male: 0, female: 0, ips: 0, fourps: 0, pwd: 0, senior: 0, total: 1 },
     stakeholders: { lgu: 0, plgu: 0, blgu: 0, pnp: 0, suc: 0, others: 0, othersLabel: "" },
   },
@@ -354,6 +373,7 @@ export const INITIAL_PROJECTS = [
     components: ["sel"],
     communities: ["artisanal"],
     status: "Finished",
+    fileData: null, fileName: "", fileType: "",
     beneficiaries: { male: 0, female: 0, ips: 0, fourps: 0, pwd: 0, senior: 0, total: 1 },
     stakeholders: { lgu: 0, plgu: 0, blgu: 0, pnp: 0, suc: 0, others: 0, othersLabel: "" },
   },
@@ -370,6 +390,7 @@ export const INITIAL_PROJECTS = [
     components: ["sel", "drrm"],
     communities: [],
     status: "Finished",
+    fileData: null, fileName: "", fileType: "",
     beneficiaries: { male: 0, female: 0, ips: 0, fourps: 0, pwd: 0, senior: 0, total: 2 },
     stakeholders: { lgu: 0, plgu: 0, blgu: 0, pnp: 0, suc: 0, others: 0, othersLabel: "" },
   },
@@ -384,6 +405,7 @@ export const INITIAL_PROJECTS = [
     components: ["sel"],
     communities: ["womens"],
     status: "Finished",
+    fileData: null, fileName: "", fileType: "",
     beneficiaries: { male: 0, female: 0, ips: 0, fourps: 0, pwd: 0, senior: 0, total: 1 },
     stakeholders: { lgu: 0, plgu: 0, blgu: 0, pnp: 0, suc: 0, others: 0, othersLabel: "" },
   },
@@ -398,6 +420,7 @@ export const INITIAL_PROJECTS = [
     components: ["sel"],
     communities: ["indigenous"],
     status: "Finished",
+    fileData: null, fileName: "", fileType: "",
     beneficiaries: { male: 0, female: 0, ips: 0, fourps: 0, pwd: 0, senior: 0, total: 1 },
     stakeholders: { lgu: 0, plgu: 0, blgu: 0, pnp: 0, suc: 0, others: 0, othersLabel: "" },
   },
@@ -412,6 +435,7 @@ export const INITIAL_PROJECTS = [
     components: ["sel"],
     communities: [],
     status: "Finished",
+    fileData: null, fileName: "", fileType: "",
     beneficiaries: { male: 0, female: 0, ips: 0, fourps: 0, pwd: 0, senior: 0, total: 1 },
     stakeholders: { lgu: 1, plgu: 0, blgu: 0, pnp: 0, suc: 0, others: 1, othersLabel: "Others" },
   },
@@ -426,6 +450,7 @@ export const INITIAL_PROJECTS = [
     components: ["sel", "hrd"],
     communities: ["conflict"],
     status: "Finished",
+    fileData: null, fileName: "", fileType: "",
     beneficiaries: { male: 0, female: 0, ips: 0, fourps: 0, pwd: 0, senior: 0, total: 2 },
     stakeholders: { lgu: 0, plgu: 0, blgu: 0, pnp: 0, suc: 0, others: 0, othersLabel: "" },
   },
@@ -440,6 +465,7 @@ export const INITIAL_PROJECTS = [
     components: ["hrd", "drrm"],
     communities: ["conflict"],
     status: "Finished",
+    fileData: null, fileName: "", fileType: "",
     beneficiaries: { male: 0, female: 0, ips: 0, fourps: 0, pwd: 0, senior: 0, total: 2 },
     stakeholders: { lgu: 0, plgu: 0, blgu: 0, pnp: 0, suc: 0, others: 0, othersLabel: "" },
   },
@@ -454,6 +480,7 @@ export const INITIAL_PROJECTS = [
     components: ["hrd", "bgcet"],
     communities: ["conflict"],
     status: "Finished",
+    fileData: null, fileName: "", fileType: "",
     beneficiaries: { male: 0, female: 0, ips: 0, fourps: 0, pwd: 0, senior: 0, total: 2 },
     stakeholders: { lgu: 0, plgu: 0, blgu: 0, pnp: 0, suc: 0, others: 0, othersLabel: "" },
   },
@@ -468,6 +495,7 @@ export const INITIAL_PROJECTS = [
     components: ["hrd", "drrm"],
     communities: ["gida"],
     status: "Finished",
+    fileData: null, fileName: "", fileType: "",
     beneficiaries: { male: 0, female: 0, ips: 0, fourps: 0, pwd: 0, senior: 0, total: 2 },
     stakeholders: { lgu: 0, plgu: 0, blgu: 0, pnp: 0, suc: 0, others: 0, othersLabel: "" },
   },
@@ -484,6 +512,7 @@ export const INITIAL_PROJECTS = [
     components: ["hrd"],
     communities: [],
     status: "Finished",
+    fileData: null, fileName: "", fileType: "",
     beneficiaries: { male: 0, female: 0, ips: 0, fourps: 0, pwd: 0, senior: 0, total: 1 },
     stakeholders: { lgu: 0, plgu: 0, blgu: 0, pnp: 0, suc: 0, others: 0, othersLabel: "" },
   },
@@ -498,6 +527,7 @@ export const INITIAL_PROJECTS = [
     components: ["hrd"],
     communities: [],
     status: "Finished",
+    fileData: null, fileName: "", fileType: "",
     beneficiaries: { male: 0, female: 0, ips: 0, fourps: 0, pwd: 0, senior: 0, total: 1 },
     stakeholders: { lgu: 0, plgu: 0, blgu: 0, pnp: 0, suc: 0, others: 0, othersLabel: "" },
   },
@@ -514,6 +544,7 @@ export const INITIAL_PROJECTS = [
     components: ["sel"],
     communities: ["gida"],
     status: "Finished",
+    fileData: null, fileName: "", fileType: "",
     beneficiaries: { male: 0, female: 0, ips: 0, fourps: 0, pwd: 0, senior: 0, total: 1 },
     stakeholders: { lgu: 0, plgu: 0, blgu: 0, pnp: 0, suc: 0, others: 0, othersLabel: "" },
   },
@@ -530,6 +561,7 @@ export const INITIAL_PROJECTS = [
     components: ["sel"],
     communities: [],
     status: "Ongoing",
+    fileData: null, fileName: "", fileType: "",
     beneficiaries: { male: 0, female: 0, ips: 0, fourps: 0, pwd: 0, senior: 0, total: 1 },
     stakeholders: { lgu: 0, plgu: 0, blgu: 0, pnp: 0, suc: 0, others: 0, othersLabel: "" },
   },
@@ -544,6 +576,7 @@ export const INITIAL_PROJECTS = [
     components: ["sel"],
     communities: ["womens"],
     status: "Ongoing",
+    fileData: null, fileName: "", fileType: "",
     beneficiaries: { male: 0, female: 0, ips: 0, fourps: 0, pwd: 0, senior: 0, total: 1 },
     stakeholders: { lgu: 0, plgu: 0, blgu: 0, pnp: 0, suc: 0, others: 0, othersLabel: "" },
   },
@@ -560,6 +593,7 @@ export const INITIAL_PROJECTS = [
     components: ["hn"],
     communities: [],
     status: "Ongoing",
+    fileData: null, fileName: "", fileType: "",
     beneficiaries: { male: 0, female: 0, ips: 0, fourps: 0, pwd: 0, senior: 0, total: 0 },
     stakeholders: { lgu: 0, plgu: 0, blgu: 0, pnp: 0, suc: 0, others: 0, othersLabel: "" },
   },
@@ -574,6 +608,7 @@ export const INITIAL_PROJECTS = [
     components: ["sel"],
     communities: ["gida"],
     status: "Ongoing",
+    fileData: null, fileName: "", fileType: "",
     beneficiaries: { male: 0, female: 0, ips: 0, fourps: 0, pwd: 0, senior: 0, total: 0 },
     stakeholders: { lgu: 0, plgu: 0, blgu: 0, pnp: 0, suc: 0, others: 0, othersLabel: "" },
   },
@@ -588,6 +623,7 @@ export const INITIAL_PROJECTS = [
     components: ["hrd", "drrm"],
     communities: [],
     status: "Ongoing",
+    fileData: null, fileName: "", fileType: "",
     beneficiaries: { male: 0, female: 0, ips: 0, fourps: 0, pwd: 0, senior: 0, total: 2 },
     stakeholders: { lgu: 0, plgu: 0, blgu: 0, pnp: 0, suc: 0, others: 0, othersLabel: "" },
   },
@@ -602,6 +638,7 @@ export const INITIAL_PROJECTS = [
     components: ["sel"],
     communities: [],
     status: "Ongoing",
+    fileData: null, fileName: "", fileType: "",
     beneficiaries: { male: 0, female: 0, ips: 0, fourps: 0, pwd: 0, senior: 0, total: 0 },
     stakeholders: { lgu: 0, plgu: 0, blgu: 0, pnp: 0, suc: 0, others: 0, othersLabel: "" },
   },

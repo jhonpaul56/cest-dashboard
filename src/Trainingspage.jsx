@@ -53,7 +53,7 @@ function ConfirmDelete({ label, onConfirm, onCancel }) {
 // ── CEST 2.0 Components keys ──
 const COMP_KEYS = ["sel","hn","hrd","drrm","bgcet","dg"];
 
-// ── CEST 2.0 Beneficiary types (from the image) ──
+// ── CEST 2.0 Beneficiary types ──
 const BENEF_TYPES = {
   gida:      "GIDA Communities",
   conflict:  "Communities-in-conflict",
@@ -92,9 +92,18 @@ function TrainingForm({ initial, onSave, onCancel }) {
 
   const toggleBenef = k => set("beneficiaryTypes", f.beneficiaryTypes.includes(k) ? f.beneficiaryTypes.filter(x=>x!==k) : [...f.beneficiaryTypes,k]);
 
+  // ── Shift+Enter = bagong linya, Enter lang = save ──
+  const handleTitleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      submit();
+    }
+    // Shift+Enter — hayaan na lang ang default (bagong linya)
+  };
+
   const submit = () => {
     const e = {};
-    if (!f.title.trim())    e.title    = "Required";
+    if (!f.title.trim())     e.title     = "Required";
     if (!f.community.trim()) e.community = "Required";
     if (Object.keys(e).length) { setErr(e); return; }
     onSave({ ...f, budget: f.budget !== "" ? Number(f.budget) : "" });
@@ -127,11 +136,27 @@ function TrainingForm({ initial, onSave, onCancel }) {
         {err.community&&<span style={{color:"#ef4444",fontSize:11}}>{err.community}</span>}
       </div>
 
-      {/* Training Title */}
+      {/* Training Title — TEXTAREA na para pwedeng Shift+Enter */}
       <div style={{ marginBottom:14 }}>
-        <label style={LS}>List of Trainings Conducted *</label>
-        <input value={f.title} onChange={e=>set("title",e.target.value)} style={{...IS,borderColor:err.title?"#ef4444":"#d1d5db"}} placeholder="Enter training title"/>
-        {err.title&&<span style={{color:"#ef4444",fontSize:11}}>{err.title}</span>}
+        <label style={LS}>
+          List of Trainings Conducted *{" "}
+          <span style={{ color:"#9ca3af", fontWeight:400, fontSize:10 }}>(Shift+Enter para sa bagong linya)</span>
+        </label>
+        <textarea
+          value={f.title}
+          onChange={e => set("title", e.target.value)}
+          onKeyDown={handleTitleKeyDown}
+          style={{
+            ...IS,
+            borderColor: err.title ? "#ef4444" : "#d1d5db",
+            minHeight: 80,
+            resize: "vertical",
+            lineHeight: 1.6,
+            fontFamily: "inherit",
+          }}
+          placeholder="Ilagay ang training title... (Shift+Enter para sa bagong linya)"
+        />
+        {err.title && <span style={{color:"#ef4444",fontSize:11}}>{err.title}</span>}
       </div>
 
       {/* Budget / MOAs */}
@@ -261,7 +286,6 @@ export default function TrainingsPage() {
         <div style={{ overflowX:"auto" }}>
           <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12 }}>
             <thead>
-              {/* Row 1 — group headers */}
               <tr>
                 <th rowSpan={2} style={{ ...thBase, verticalAlign:"middle", textAlign:"center" }}>No.</th>
                 <th rowSpan={2} style={{ ...thBase, verticalAlign:"middle", textAlign:"center" }}>Date / Year</th>
@@ -269,22 +293,16 @@ export default function TrainingsPage() {
                 <th rowSpan={2} style={{ ...thBase, verticalAlign:"middle" }}>Community / Beneficiaries</th>
                 <th rowSpan={2} style={{ ...thBase, verticalAlign:"middle" }}>List of Trainings Conducted</th>
                 <th rowSpan={2} style={{ ...thBase, verticalAlign:"middle", textAlign:"center" }}>Budget</th>
-                <th rowSpan={2} style={{ ...thBase, verticalAlign:"middle", textAlign:"center" }}>MOAs</th>
-                {/* CEST 2.0 Components — single column */}
+                <th rowSpan={2} style={{ ...thBase, verticalAlign:"middle", textAlign:"center" }}>MOV's</th>
                 <th rowSpan={2} style={{ ...thBase, verticalAlign:"middle", textAlign:"center", background:"#1e3a8f", color:"#fff" }}>CEST 2.0 Components</th>
-                {/* CEST 2.0 Beneficiaries group */}
                 <th colSpan={Object.keys(BENEF_TYPES).length} style={groupTH("#0369a1")}>CEST 2.0 Beneficiaries</th>
-                {/* No. of Beneficiaries group */}
                 <th colSpan={3} style={groupTH("#166534")}>No. of Beneficiaries</th>
                 <th rowSpan={2} style={{ ...thBase, verticalAlign:"middle", textAlign:"center" }}>Actions</th>
               </tr>
-              {/* Row 2 — sub-headers */}
               <tr>
-                {/* Beneficiary types */}
                 {Object.values(BENEF_TYPES).map(v=>(
                   <th key={v} style={subTH("#0369a1")}>{v}</th>
                 ))}
-                {/* No. of Beneficiaries */}
                 <th style={subTH("#166534")}>Male</th>
                 <th style={subTH("#166534")}>Female</th>
                 <th style={subTH("#166534")}>Total</th>
@@ -301,7 +319,14 @@ export default function TrainingsPage() {
                   </TD>
                   <TD style={{color:"#1e40af",fontWeight:600}}>{t.municipality}</TD>
                   <TD>{t.community}</TD>
-                  <TD style={{maxWidth:200}}>{t.title}</TD>
+
+                  {/* ── Title cell — ginagamit ang whiteSpace:pre-wrap para lumabas ang line breaks ── */}
+                  <TD style={{ maxWidth:220 }}>
+                    <div style={{ whiteSpace:"pre-wrap", wordBreak:"break-word", lineHeight:1.6 }}>
+                      {t.title}
+                    </div>
+                  </TD>
+
                   <TD style={{textAlign:"right",whiteSpace:"nowrap",color:"#16a34a",fontWeight:700}}>
                     {t.budget!==""&&t.budget!=null ? `₱${Number(t.budget).toLocaleString()}` : ""}
                   </TD>
@@ -313,17 +338,14 @@ export default function TrainingsPage() {
                       </span>
                     ) : ""}
                   </TD>
-                  {/* Beneficiary types */}
                   {Object.keys(BENEF_TYPES).map(k=>(
                     <TD key={k} style={{textAlign:"center"}}>
                       {(t.beneficiaryTypes||[]).includes(k) ? <span style={{color:"#0369a1",fontWeight:900,fontSize:14}}>✓</span> : ""}
                     </TD>
                   ))}
-                  {/* No. of Beneficiaries */}
                   <TD style={{textAlign:"center"}}>{t.beneficiaries?.male||""}</TD>
                   <TD style={{textAlign:"center"}}>{t.beneficiaries?.female||""}</TD>
                   <TD style={{textAlign:"center",fontWeight:700}}>{t.beneficiaries?.total||""}</TD>
-                  {/* Actions */}
                   <TD>
                     <div style={{display:"flex",gap:4}}>
                       <button onClick={()=>setModal({type:"edit",data:t})} style={{ background:"#eff6ff", border:"1px solid #bfdbfe", color:"#1e40af", borderRadius:5, padding:"3px 8px", fontSize:11, cursor:"pointer" }}>Edit</button>
@@ -337,7 +359,6 @@ export default function TrainingsPage() {
               )}
             </tbody>
 
-            {/* Footer totals */}
             <tfoot>
               <tr style={{ background:"#1e3a5f", color:"#fff", fontWeight:800 }}>
                 <td colSpan={5} style={{ padding:"8px 10px", fontSize:12 }}>Total No. of Trainings Conducted: {filtered.length}</td>

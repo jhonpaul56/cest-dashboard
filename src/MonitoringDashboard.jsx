@@ -6,13 +6,21 @@
 // ─── IMPORTS ──────────────────────────────────────────────────────────────────
 import { useState } from "react";
 import logo from "./assets/logo.png";
+import cardProjectsIcon    from "./assets/card_total_projects.png";
+import cardCommunitiesIcon from "./assets/card_communities.png";
+import cardAmountIcon      from "./assets/card_total_amount.png";
+import cardStatusIcon      from "./assets/card_status.png";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
 } from "recharts";
-
+import dashboardIcon from "./assets/dashboard.png";
+import dataentryIcon from "./assets/dataentry.png";
+import projectsIcon from "./assets/projects.png";
+import trainingIcon from "./assets/trainings.png";
+import kpireportsIcon from "./assets/kpireports.png";
 import {
-  IS, LS, projTitleStyle, thBase, tdBase, modalOverlay,
+  IS, LS, thBase, tdBase, modalOverlay,
   noSpinnerCSS, appWrapper, toastStyle,
   sidebarWrapper, sidebarLogoSection, sidebarLogoInner, sidebarTagline,
   sidebarNav, navItem, navKpiBadge,
@@ -38,16 +46,13 @@ import {
   kpiPageHeader, kpiOverviewCard, kpiMiniGrid, kpiMiniCard,
   kpiDetailCard, kpiIndicatorRow, kpiEmptyState,
 } from "./styles";
-
-import TrainingsPage from "./Trainingspage";
-
 import {
   COMPONENTS, COMP_COLORS, PIE_COLORS, KPI_LIST, DEFAULT_SETTINGS,
   LS_KEYS, STATUS_OPTIONS, COMMUNITY_TYPES, COMMUNITY_COLORS,
-  fmt, loadFromStorage, saveToStorage, openProjectAsPDF,
+  fmt, loadFromStorage, saveToStorage, openUploadedFile,
   INITIAL_PROJECTS, INITIAL_EQUIPMENT,
 } from "./Utils";
-
+import TrainingsPage from "./Trainingspage";
 
 // ─── LOCALSTORAGE HOOK ────────────────────────────────────────────────────────
 function usePersistedState(lsKey, fallback) {
@@ -180,11 +185,27 @@ function ProjectDetailModal({ project, onClose, onEdit, onDelete }) {
           </div>
         </div>
 
+        {/* Attached file display */}
+        {p.fileData && (
+          <div style={{ background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: 8, padding: "10px 14px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: 20 }}>📎</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#0369a1", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.fileName || "Attached File"}</div>
+              <div style={{ fontSize: 10, color: "#6b7280", marginTop: 2 }}>Attached project file</div>
+            </div>
+            <button
+              onClick={() => openUploadedFile(p.fileData, p.fileName)}
+              style={{ background: "#0369a1", border: "none", color: "#fff", borderRadius: 6, padding: "6px 14px", fontSize: 11, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}
+            >
+              View File
+            </button>
+          </div>
+        )}
+
         <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", paddingTop: 4, borderTop: "1px solid #e5e7eb", marginTop: 4 }}>
-          <button onClick={onClose}                   style={btnSecondary}>Close</button>
-          <button onClick={() => openProjectAsPDF(p)} style={btnBlueOutline}>📄 View PDF</button>
-          <button onClick={onEdit}                    style={btnBlueOutline}>✏️ Edit</button>
-          <button onClick={onDelete}                  style={btnDangerOutline}>🗑️ Delete</button>
+          <button onClick={onClose}  style={btnSecondary}>Close</button>
+          <button onClick={onEdit}   style={btnBlueOutline}>✏️ Edit</button>
+          <button onClick={onDelete} style={btnDangerOutline}>🗑️ Delete</button>
         </div>
       </div>
     </Modal>
@@ -200,6 +221,7 @@ function ProjectForm({ initial, onSave, onCancel }) {
     year: "", municipality: "", community: "", project: "",
     amountFunded: "", amountPerYear: "", components: [], communities: [],
     status: "Ongoing",
+    fileData: null, fileName: "", fileType: "",
     beneficiaries: { male: "", female: "", ips: "", fourps: "", pwd: "", senior: "", total: "" },
     stakeholders:  { lgu: "", plgu: "", blgu: "", pnp: "", suc: "", othersLabel: "", others: "" },
   };
@@ -209,6 +231,9 @@ function ProjectForm({ initial, onSave, onCancel }) {
     amountFunded:  initial.amountFunded  || "",
     amountPerYear: initial.amountPerYear || "",
     communities:   initial.communities   || [],
+    fileData:      initial.fileData      || null,
+    fileName:      initial.fileName      || "",
+    fileType:      initial.fileType      || "",
     beneficiaries: { ...blank.beneficiaries, ...initial.beneficiaries },
     stakeholders:  { ...blank.stakeholders,  ...initial.stakeholders  },
   } : blank);
@@ -218,6 +243,33 @@ function ProjectForm({ initial, onSave, onCancel }) {
 
   const toggleComp = c => set("components", f.components.includes(c) ? f.components.filter(x => x !== c) : [...f.components, c]);
   const toggleComm = c => set("communities", f.communities.includes(c) ? f.communities.filter(x => x !== c) : [...f.communities, c]);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      set("fileData", ev.target.result);
+      set("fileName", file.name);
+      set("fileType", file.type);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const clearFile = () => {
+    set("fileData", null);
+    set("fileName", "");
+    set("fileType", "");
+  };
+
+  // ── Shift+Enter = bagong linya, Enter lang = save ──
+  const handleProjectKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      submit();
+    }
+    // Shift+Enter — hayaan na lang ang default (bagong linya)
+  };
 
   const submit = () => {
     const e = {};
@@ -241,13 +293,86 @@ function ProjectForm({ initial, onSave, onCancel }) {
         </div>
       </div>
 
-      {[["community", "Community / Beneficiaries *"], ["project", "Project Title *"]].map(([k, l]) => (
-        <div key={k} style={{ marginBottom: 14 }}>
-          <label style={LS}>{l}</label>
-          <input value={f[k]} onChange={e => set(k, e.target.value)} style={{ ...IS, borderColor: err[k] ? "#ef4444" : "#d1d5db" }} placeholder={`Enter ${l.replace(" *", "")}`} />
-          {err[k] && <span style={{ color: "#ef4444", fontSize: 11 }}>{err[k]}</span>}
+      {/* Community */}
+      <div style={{ marginBottom: 14 }}>
+        <label style={LS}>Community / Beneficiaries *</label>
+        <input
+          value={f.community}
+          onChange={e => set("community", e.target.value)}
+          style={{ ...IS, borderColor: err.community ? "#ef4444" : "#d1d5db" }}
+          placeholder="Enter community"
+        />
+        {err.community && <span style={{ color: "#ef4444", fontSize: 11 }}>{err.community}</span>}
+      </div>
+
+      {/* Project Title — TEXTAREA para pwedeng Shift+Enter */}
+      <div style={{ marginBottom: 14 }}>
+        <label style={LS}>
+          Project Title *{" "}
+          <span style={{ color: "#9ca3af", fontWeight: 400, fontSize: 10 }}>(Shift+Enter para sa bagong linya)</span>
+        </label>
+        <textarea
+          value={f.project}
+          onChange={e => set("project", e.target.value)}
+          onKeyDown={handleProjectKeyDown}
+          style={{
+            ...IS,
+            borderColor: err.project ? "#ef4444" : "#d1d5db",
+            minHeight: 80,
+            resize: "vertical",
+            lineHeight: 1.6,
+            fontFamily: "inherit",
+          }}
+          placeholder="Ilagay ang project title... (Shift+Enter para sa bagong linya)"
+        />
+        {err.project && <span style={{ color: "#ef4444", fontSize: 11 }}>{err.project}</span>}
+      </div>
+
+      {/* File Upload — optional */}
+      <div style={{ marginBottom: 14 }}>
+        <label style={LS}>
+          Attach Project File{" "}
+          <span style={{ color: "#9ca3af", fontWeight: 400, fontSize: 10 }}>(optional — PDF, DOC, image, etc.)</span>
+        </label>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <label style={{
+            display: "flex", alignItems: "center", gap: 8,
+            background: f.fileName ? "#f0fdf4" : "#f9fafb",
+            border: `1px dashed ${f.fileName ? "#86efac" : "#d1d5db"}`,
+            borderRadius: 7, padding: "9px 14px", fontSize: 12,
+            fontWeight: 600, color: f.fileName ? "#16a34a" : "#6b7280",
+            cursor: "pointer", flex: 1, transition: "all 0.15s",
+          }}>
+            <span style={{ fontSize: 16 }}>📎</span>
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {f.fileName ? f.fileName : "Click to upload a file..."}
+            </span>
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.xlsx,.xls,.ppt,.pptx,.txt"
+              style={{ display: "none" }}
+              onChange={handleFileChange}
+            />
+          </label>
+          {f.fileName && (
+            <button
+              type="button"
+              onClick={clearFile}
+              title="Remove file"
+              style={{
+                background: "#fef2f2", border: "1px solid #fecaca",
+                color: "#ef4444", borderRadius: 7, padding: "9px 12px",
+                fontSize: 14, cursor: "pointer", fontWeight: 700, flexShrink: 0,
+              }}
+            >✕</button>
+          )}
         </div>
-      ))}
+        {f.fileName && (
+          <div style={{ fontSize: 11, color: "#16a34a", marginTop: 5, display: "flex", alignItems: "center", gap: 4 }}>
+            <span>✓</span> <span>{f.fileName} — ready to save</span>
+          </div>
+        )}
+      </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 14 }}>
         <div>
@@ -547,6 +672,31 @@ function SettingsPanel({ settings, onSave, onClose }) {
 
 
 // ══════════════════════════════════════════════════════════════════════════════
+// FILE BUTTON — reusable small button shown under project title in tables
+// ══════════════════════════════════════════════════════════════════════════════
+function FileButton({ p }) {
+  if (!p.fileData) return null;
+  return (
+    <button
+      onClick={(e) => { e.stopPropagation(); openUploadedFile(p.fileData, p.fileName); }}
+      title={p.fileName || "View attached file"}
+      style={{
+        marginTop: 4,
+        display: "inline-flex", alignItems: "center", gap: 4,
+        background: "#eff6ff", border: "1px solid #bfdbfe",
+        color: "#1e40af", borderRadius: 5,
+        padding: "2px 8px", fontSize: 10, fontWeight: 700,
+        cursor: "pointer", maxWidth: 180,
+        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+      }}
+    >
+      📎 {p.fileName ? p.fileName : "View File"}
+    </button>
+  );
+}
+
+
+// ══════════════════════════════════════════════════════════════════════════════
 // MAIN DASHBOARD
 // ══════════════════════════════════════════════════════════════════════════════
 export default function MonitoringDashboard() {
@@ -638,13 +788,14 @@ export default function MonitoringDashboard() {
   const BENEF_COLS = ["male","female","ips","fourps","pwd","senior","total"];
   const STAKE_COLS = ["lgu","plgu","blgu","pnp","suc","others"];
 
-  const NAV_ITEMS = [
-    { id: "dashboard",  icon: "🏠", label: "Dashboard"   },
-    { id: "dataentry",  icon: "✏️", label: "Data Entry"  },
-    { id: "projects",   icon: "📋", label: "Projects"    },
-    { id: "trainings",  icon: "🎓", label: "Trainings"   },
-    { id: "kpireports", icon: "📊", label: "KPI Reports" },
-  ];
+  //SIDEBAR NAV icons
+const NAV_ITEMS = [
+  { id: "dashboard",  icon: dashboardIcon, label: "Dashboard",   isImage: true  },
+  { id: "dataentry",  icon: dataentryIcon,    label: "Data Entry",  isImage: true },
+  { id: "projects",   icon: projectsIcon,          label: "Projects",    isImage: true },
+  { id: "trainings",  icon: trainingIcon,          label: "Trainings",   isImage: true },
+  { id: "kpireports", icon: kpireportsIcon,          label: "KPI Reports", isImage: true },
+];
 
   const closeAll = () => { setShowNotifs(false); setShowSettings(false); };
 
@@ -687,14 +838,18 @@ export default function MonitoringDashboard() {
         </div>
 
         <nav style={sidebarNav}>
-          {NAV_ITEMS.map(n => (
-            <button key={n.id} onClick={() => setActivePage(n.id)} style={navItem(activePage === n.id)}>
-              <span style={{ fontSize: 16 }}>{n.icon}</span>
-              {n.label}
-              {n.id === "kpireports" && <span style={navKpiBadge}>{Object.keys(COMPONENTS).length}</span>}
-            </button>
-          ))}
-        </nav>
+  {NAV_ITEMS.map(n => (
+    <button key={n.id} onClick={() => setActivePage(n.id)} style={navItem(activePage === n.id)}>
+      {/* ✅ GANITO — may check kung image o emoji */}
+      {n.isImage
+        ? <img src={n.icon} alt={n.label} width={20} height={20} style={{ objectFit: "contain", flexShrink: 0 }} />
+        : <span style={{ fontSize: 16 }}>{n.icon}</span>
+      }
+      {n.label}
+      {n.id === "kpireports" && <span style={navKpiBadge}>{Object.keys(COMPONENTS).length}</span>}
+    </button>
+  ))}
+</nav>
 
         <div style={sidebarLogoutSection}>
           <button style={sidebarLogoutBtn}><span>🚪</span> Logout</button>
@@ -737,17 +892,17 @@ export default function MonitoringDashboard() {
               {/* Summary Cards */}
               <div style={summaryGrid}>
                 {[
-                  { label: "Total Projects",        value: projects.length,                                  icon: "📊", bg: "linear-gradient(135deg,#1e40af,#3b82f6)" },
-                  { label: "Communities",            value: uniqueComm,                                        icon: "👥", bg: "linear-gradient(135deg,#16a34a,#4ade80)" },
-                  { label: "Total Amount Assisted",  value: fmt(totalFunds),                                   icon: "💰", bg: "linear-gradient(135deg,#7c3aed,#a78bfa)" },
-                  { label: "Status",                 value: `${activeCount} Ongoing / ${doneCount} Finished`, icon: "📈", bg: "linear-gradient(135deg,#d97706,#fbbf24)" },
+                  { label: "Total Projects",        value: projects.length,                 icon: cardProjectsIcon,    bg: "linear-gradient(135deg,#1e40af,#3b82f6)" },
+{ label: "Communities",           value: uniqueComm,                                        icon: cardCommunitiesIcon, bg: "linear-gradient(135deg,#16a34a,#4ade80)" },
+{ label: "Total Amount Assisted", value: fmt(totalFunds),                                   icon: cardAmountIcon,      bg: "linear-gradient(135deg,#7c3aed,#a78bfa)" },
+{ label: "Status",                value: `${activeCount} Ongoing / ${doneCount} Finished`, icon: cardStatusIcon,      bg: "linear-gradient(135deg,#d97706,#fbbf24)" },
                 ].map(s => (
                   <div key={s.label} style={summaryCard(s.bg)}>
                     <div>
                       <div style={summaryCardLabel}>{s.label}</div>
                       <div style={{ fontSize: typeof s.value === "string" ? 15 : 28, fontWeight: 900, color: "#fff" }}>{s.value}</div>
                     </div>
-                    <div style={{ fontSize: 34, opacity: 0.85 }}>{s.icon}</div>
+                    <img src={s.icon} width={48} height={48} alt={s.label} style={{ opacity: 0.9 }} />
                   </div>
                 ))}
               </div>
@@ -848,7 +1003,7 @@ export default function MonitoringDashboard() {
                         <th rowSpan={3} style={{ ...thBase, verticalAlign: "middle", textAlign: "center" }}>Year</th>
                         <th rowSpan={3} style={{ ...thBase, verticalAlign: "middle" }}>Municipality / City</th>
                         <th rowSpan={3} style={{ ...thBase, verticalAlign: "middle" }}>Community / Beneficiaries</th>
-                        <th rowSpan={3} style={{ ...thBase, verticalAlign: "middle" }}>List of Projects Funded 📄</th>
+                        <th rowSpan={3} style={{ ...thBase, verticalAlign: "middle" }}>List of Projects Funded</th>
                         <th rowSpan={3} style={{ ...thBase, verticalAlign: "middle", textAlign: "center" }}>Amount Funded</th>
                         <th rowSpan={3} style={{ ...thBase, verticalAlign: "middle", textAlign: "center" }}>Amount / Year</th>
                         <th colSpan={COMP_KEYS.length}  style={groupTH("#1e3a8f")}>CEST 2.0 Components</th>
@@ -888,12 +1043,11 @@ export default function MonitoringDashboard() {
                             <TD style={{ fontWeight: 700, color: "#1e40af", textAlign: "center" }}>{p.year}</TD>
                             <TD style={{ color: "#1e40af", fontWeight: 600 }}>{p.municipality}</TD>
                             <TD>{p.community}</TD>
-                            <TD style={{ maxWidth: 200 }}>
-                              <div style={{ ...projTitleStyle, maxWidth: 200, whiteSpace: "normal", wordBreak: "break-word" }} onClick={() => openProjectAsPDF(p)}
-                                onMouseEnter={e => { e.currentTarget.style.color = "#2563eb"; e.currentTarget.style.textDecorationStyle = "solid"; }}
-                                onMouseLeave={e => { e.currentTarget.style.color = "#1e40af"; e.currentTarget.style.textDecorationStyle = "dotted"; }}>
-                                📄 {p.project}
+                            <TD style={{ maxWidth: 220 }}>
+                              <div style={{ fontSize: 12, fontWeight: 700, color: "#111827", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                                {p.project}
                               </div>
+                              <FileButton p={p} />
                             </TD>
                             <TD style={{ color: "#16a34a", fontWeight: 700, whiteSpace: "nowrap", textAlign: "right" }}>{fmt(p.amountFunded)}</TD>
                             <TD style={{ whiteSpace: "nowrap", textAlign: "right" }}>{fmt(p.amountPerYear)}</TD>
@@ -1020,15 +1174,20 @@ export default function MonitoringDashboard() {
                       return (
                         <div key={p.id} style={dataEntryItem}>
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ ...projTitleStyle, marginBottom: 3, whiteSpace: "normal", overflow: "visible", textOverflow: "unset" }} onClick={() => openProjectAsPDF(p)}
-                              onMouseEnter={e => { e.currentTarget.style.color = "#2563eb"; e.currentTarget.style.textDecorationStyle = "solid"; }}
-                              onMouseLeave={e => { e.currentTarget.style.color = "#1e40af"; e.currentTarget.style.textDecorationStyle = "dotted"; }}>
-                              📄 {p.project}
+                            <div style={{ fontSize: 12, fontWeight: 700, color: "#111827", marginBottom: 3, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                              {p.project}
                             </div>
                             <div style={{ fontSize: 11, color: "#6b7280", marginTop: 2 }}>{p.municipality} · {p.year} · {fmt(p.amountFunded)}</div>
-                            <div style={{ display: "flex", gap: 4, marginTop: 4, flexWrap: "wrap" }}>
+                            <div style={{ display: "flex", gap: 4, marginTop: 4, flexWrap: "wrap", alignItems: "center" }}>
                               <span style={{ background: sc.bg, color: sc.color, borderRadius: 20, padding: "1px 8px", fontSize: 10, fontWeight: 700 }}>{p.status}</span>
                               {p.components.map(c => <span key={c} style={{ background: COMP_COLORS[c], color: "#fff", borderRadius: 4, padding: "1px 6px", fontSize: 9, fontWeight: 800, textTransform: "uppercase" }}>{c}</span>)}
+                              {p.fileData && (
+                                <button
+                                  onClick={() => openUploadedFile(p.fileData, p.fileName)}
+                                  title={p.fileName}
+                                  style={{ background: "#eff6ff", border: "1px solid #bfdbfe", color: "#1e40af", borderRadius: 4, padding: "1px 7px", fontSize: 9, fontWeight: 700, cursor: "pointer" }}
+                                >📎 {p.fileName || "File"}</button>
+                              )}
                             </div>
                           </div>
                           <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
@@ -1091,7 +1250,7 @@ export default function MonitoringDashboard() {
                     <thead>
                       <tr>
                         <TH ch="#" /><TH ch="Year" /><TH ch="Municipality" /><TH ch="Community" />
-                        <TH ch="Project 📄" /><TH ch="Amount Funded" /><TH ch="Amt/Year" />
+                        <TH ch="Project" /><TH ch="Amount Funded" /><TH ch="Amt/Year" />
                         <TH ch="Components" /><TH ch="Status" /><TH ch="Actions" />
                       </tr>
                     </thead>
@@ -1104,17 +1263,16 @@ export default function MonitoringDashboard() {
                             <TD style={{ fontWeight: 700 }}>{p.year}</TD>
                             <TD style={{ color: "#1e40af", fontWeight: 600 }}>{p.municipality}</TD>
                             <TD style={{ maxWidth: 130 }}><div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 130 }}>{p.community}</div></TD>
-                            <TD style={{ maxWidth: 180 }}>
-                              <div style={{ ...projTitleStyle, maxWidth: 180, whiteSpace: "normal", wordBreak: "break-word" }} onClick={() => openProjectAsPDF(p)}
-                                onMouseEnter={e => { e.currentTarget.style.color = "#2563eb"; e.currentTarget.style.textDecorationStyle = "solid"; }}
-                                onMouseLeave={e => { e.currentTarget.style.color = "#1e40af"; e.currentTarget.style.textDecorationStyle = "dotted"; }}>
-                                📄 {p.project}
+                            <TD style={{ maxWidth: 200 }}>
+                              <div style={{ fontSize: 12, fontWeight: 700, color: "#111827", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                                {p.project}
                               </div>
+                              <FileButton p={p} />
                             </TD>
                             <TD style={{ color: "#16a34a", fontWeight: 700, whiteSpace: "nowrap" }}>{fmt(p.amountFunded)}</TD>
                             <TD style={{ whiteSpace: "nowrap" }}>{fmt(p.amountPerYear)}</TD>
                             <TD>
-                              <div style={{ display: "flex", gap: 3 }}>
+                              <div style={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
                                 {p.components.map(c => <span key={c} style={{ background: COMP_COLORS[c], color: "#fff", borderRadius: 4, padding: "2px 6px", fontSize: 9, fontWeight: 800, textTransform: "uppercase" }}>{c}</span>)}
                                 {!p.components.length && <span style={{ color: "#9ca3af" }}>—</span>}
                               </div>
@@ -1276,11 +1434,10 @@ export default function MonitoringDashboard() {
                                     <td style={{ padding: "7px 10px", fontWeight: 700 }}>{p.year}</td>
                                     <td style={{ padding: "7px 10px", color: "#1e40af", fontWeight: 600 }}>{p.municipality}</td>
                                     <td style={{ padding: "7px 10px", maxWidth: 200 }}>
-                                      <div style={{ ...projTitleStyle, maxWidth: 200, whiteSpace: "normal", wordBreak: "break-word" }} onClick={() => openProjectAsPDF(p)}
-                                        onMouseEnter={e => { e.currentTarget.style.color = "#2563eb"; e.currentTarget.style.textDecorationStyle = "solid"; }}
-                                        onMouseLeave={e => { e.currentTarget.style.color = "#1e40af"; e.currentTarget.style.textDecorationStyle = "dotted"; }}>
-                                        📄 {p.project}
+                                      <div style={{ fontSize: 11, fontWeight: 700, color: "#111827", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                                        {p.project}
                                       </div>
+                                      <FileButton p={p} />
                                     </td>
                                     <td style={{ padding: "7px 10px", color: "#16a34a", fontWeight: 700, whiteSpace: "nowrap" }}>{fmt(p.amountFunded)}</td>
                                     <td style={{ padding: "7px 10px", textAlign: "center" }}>{p.beneficiaries?.total || "—"}</td>
