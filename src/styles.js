@@ -34,8 +34,9 @@ export const projTitleStyle = {
 };
 
 export const thBase = {
-  padding: "8px 10px",
-  textAlign: "left",
+  padding: "10px 12px",
+  textAlign: "center",
+  verticalAlign: "middle",
   color: "#fff",
   fontWeight: 700,
   fontSize: 11,
@@ -45,19 +46,20 @@ export const thBase = {
 };
 
 export const tdBase = {
-  padding: "8px 10px",
+  padding: "9px 12px",
   fontSize: 12,
   color: "#111827",
   borderBottom: "1px solid #e5e7eb",
   borderRight: "1px solid #f3f4f6",
   verticalAlign: "middle",
+  textAlign: "left",
 };
 
 export const modalOverlay = {
   position: "fixed",
   inset: 0,
   background: "rgba(0,0,0,0.55)",
-  zIndex: 1000,
+  zIndex: 2000,
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
@@ -65,7 +67,6 @@ export const modalOverlay = {
 };
 
 // ─── GLOBAL CSS STRING ────────────────────────────────────────────────────────
-// Inject via: <style>{noSpinnerCSS}</style>
 export const noSpinnerCSS = `
   input[type=number]::-webkit-inner-spin-button,
   input[type=number]::-webkit-outer-spin-button {
@@ -76,8 +77,98 @@ export const noSpinnerCSS = `
     -moz-appearance: textfield;
     appearance: textfield;
   }
-  .dashboard-projects-table th { padding: 10px 14px !important; }
-  .dashboard-projects-table td { padding: 10px 14px !important; }
+
+  /* ── Table base alignment ── */
+  .cest-table th {
+    text-align: center !important;
+    vertical-align: middle !important;
+    padding: 10px 12px !important;
+    white-space: nowrap;
+  }
+  .cest-table td {
+    vertical-align: middle !important;
+    padding: 9px 12px !important;
+  }
+  /* Left-align text columns */
+  .cest-table td.col-text {
+    text-align: left !important;
+  }
+  /* Center-align checkbox/number columns */
+  .cest-table td.col-center {
+    text-align: center !important;
+  }
+  /* Right-align currency columns */
+  .cest-table td.col-right {
+    text-align: right !important;
+  }
+
+  /* ── Responsive sidebar ── */
+  @media (max-width: 1024px) {
+    .cest-sidebar {
+      position: fixed !important;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      transform: translateX(-100%);
+      transition: transform 0.25s ease !important;
+      z-index: 1500 !important;
+      box-shadow: 4px 0 24px rgba(0,0,0,0.18) !important;
+    }
+    .cest-sidebar.open {
+      transform: translateX(0) !important;
+    }
+    .cest-hamburger {
+      display: flex !important;
+    }
+    .cest-top-stats {
+      display: none !important;
+    }
+  }
+  @media (min-width: 1025px) {
+    .cest-hamburger {
+      display: none !important;
+    }
+    .cest-overlay {
+      display: none !important;
+    }
+  }
+
+  /* ── Responsive grids ── */
+  @media (max-width: 1024px) {
+    .cest-summary-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
+    .cest-chart-grid {
+      grid-template-columns: 1fr !important;
+    }
+    .cest-data-entry-grid {
+      grid-template-columns: 1fr !important;
+    }
+    .cest-kpi-mini-grid {
+      grid-template-columns: repeat(3, 1fr) !important;
+    }
+    .cest-filter-bar {
+      flex-direction: column !important;
+    }
+    .cest-filter-bar input,
+    .cest-filter-bar select {
+      width: 100% !important;
+      min-width: unset !important;
+    }
+  }
+  @media (max-width: 640px) {
+    .cest-summary-grid {
+      grid-template-columns: 1fr !important;
+    }
+    .cest-kpi-mini-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
 `;
 
 // ─── APP WRAPPER ──────────────────────────────────────────────────────────────
@@ -87,6 +178,7 @@ export const appWrapper = {
   fontFamily: "'Segoe UI',system-ui,sans-serif",
   background: "#eff6ff",
   overflow: "hidden",
+  position: "relative",
 };
 
 // ─── TOAST ────────────────────────────────────────────────────────────────────
@@ -94,7 +186,7 @@ export const toastStyle = (color) => ({
   position: "fixed",
   top: 18,
   right: 18,
-  zIndex: 3000,
+  zIndex: 4000,
   background: color,
   color: "#fff",
   borderRadius: 10,
@@ -107,13 +199,16 @@ export const toastStyle = (color) => ({
 // ─── SIDEBAR ──────────────────────────────────────────────────────────────────
 export const sidebarWrapper = {
   width: 220,
+  minWidth: 220,
   background: "#fff",
   borderRight: "1px solid #e5e7eb",
   display: "flex",
   flexDirection: "column",
   flexShrink: 0,
   boxShadow: "2px 0 8px rgba(0,0,0,0.04)",
-  zIndex: 10,
+  zIndex: 100,
+  transition: "transform 0.25s ease",
+  overflowY: "auto",
 };
 
 export const sidebarLogoSection = {
@@ -156,6 +251,7 @@ export const navItem = (isActive) => ({
   cursor: "pointer",
   textAlign: "left",
   borderLeft:  isActive ? "3px solid #1e40af" : "3px solid transparent",
+  transition: "background 0.2s ease, color 0.2s ease, border-left 0.2s ease, padding-left 0.2s ease",
 });
 
 export const navKpiBadge = {
@@ -166,11 +262,6 @@ export const navKpiBadge = {
   padding: "1px 7px",
   fontSize: 9,
   fontWeight: 800,
-};
-
-export const sidebarLogoutSection = {
-  padding: "14px 10px",
-  borderTop: "1px solid #e5e7eb",
 };
 
 export const sidebarLogoutBtn = {
@@ -221,32 +312,39 @@ export const sidebarFooterTagline = {
 // ─── TOP BAR ──────────────────────────────────────────────────────────────────
 export const topBar = {
   background: "#1e40af",
-  padding: "0 28px",
+  padding: "0 20px",
   height: 60,
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   flexShrink: 0,
   zIndex: 10,
+  gap: 12,
 };
 
 export const topBarTitle = {
   margin: 0,
-  fontSize: 20,
+  fontSize: 18,
   fontWeight: 900,
   color: "#fff",
+  flex: 1,
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
 };
 
 export const topBarRight = {
   display: "flex",
   gap: 8,
   alignItems: "center",
+  flexShrink: 0,
 };
 
 export const topBarStats = {
   color: "rgba(255,255,255,0.65)",
   fontSize: 12,
   marginRight: 4,
+  whiteSpace: "nowrap",
 };
 
 export const topBarIconBtn = (isActive) => ({
@@ -262,6 +360,7 @@ export const topBarIconBtn = (isActive) => ({
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
+  flexShrink: 0,
 });
 
 export const notifDot = {
@@ -287,6 +386,7 @@ export const mainContentArea = {
   display: "flex",
   flexDirection: "column",
   overflow: "hidden",
+  minWidth: 0,
 };
 
 export const pageContent = {
@@ -480,7 +580,7 @@ export const btnSmallDanger = {
   cursor: "pointer",
 };
 
-// ─── SETTINGS SECTION TITLE ───────────────────────────────────────────────────
+// ─── SETTINGS ────────────────────────────────────────────────────────────────
 export const settingsSectionTitle = {
   fontSize: 11,
   fontWeight: 800,
@@ -492,16 +592,24 @@ export const settingsSectionTitle = {
   borderBottom: "1px solid #f3f4f6",
 };
 
+export const settingsDangerBox = {
+  background: "#fef2f2",
+  border: "1px solid #fecaca",
+  borderRadius: 8,
+  padding: "12px 14px",
+};
+
 // ─── NOTIFICATION PANEL ───────────────────────────────────────────────────────
 export const notifPanel = {
   position: "fixed",
   top: 64,
   right: 16,
   width: 360,
+  maxWidth: "calc(100vw - 32px)",
   background: "#fff",
   borderRadius: 14,
   boxShadow: "0 8px 40px rgba(0,0,0,0.18)",
-  zIndex: 2000,
+  zIndex: 3000,
   overflow: "hidden",
   border: "1px solid #e5e7eb",
 };
@@ -532,16 +640,10 @@ export const notifIconWrap = (type) => {
   };
   const s = map[type] || map.info;
   return {
-    width: 34,
-    height: 34,
-    borderRadius: 8,
-    background: s.bg,
-    border: `1px solid ${s.border}`,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: 16,
-    flexShrink: 0,
+    width: 34, height: 34, borderRadius: 8,
+    background: s.bg, border: `1px solid ${s.border}`,
+    display: "flex", alignItems: "center", justifyContent: "center",
+    fontSize: 16, flexShrink: 0,
   };
 };
 
@@ -551,10 +653,11 @@ export const settingsPanel = {
   top: 64,
   right: 16,
   width: 380,
+  maxWidth: "calc(100vw - 32px)",
   background: "#fff",
   borderRadius: 14,
   boxShadow: "0 8px 40px rgba(0,0,0,0.18)",
-  zIndex: 2000,
+  zIndex: 3000,
   overflow: "hidden",
   border: "1px solid #e5e7eb",
 };
@@ -568,19 +671,10 @@ export const settingsPanelFooter = {
   background: "#f9fafb",
 };
 
-export const settingsDangerBox = {
-  background: "#fef2f2",
-  border: "1px solid #fecaca",
-  borderRadius: 8,
-  padding: "12px 14px",
-};
-
 // ─── DASHBOARD PAGE ───────────────────────────────────────────────────────────
-
-// 4 summary cards grid
 export const summaryGrid = {
   display: "grid",
-  gridTemplateColumns: "repeat(4,1fr)",
+  gridTemplateColumns: "repeat(4, 1fr)",
   gap: 14,
   marginBottom: 20,
 };
@@ -604,15 +698,14 @@ export const summaryCardLabel = {
   letterSpacing: "0.06em",
 };
 
-// Filter bar row
 export const filterBarRow = {
   display: "flex",
   gap: 10,
   marginBottom: 16,
   flexWrap: "wrap",
+  alignItems: "center",
 };
 
-// Charts 2-col grid
 export const chartGrid = {
   display: "grid",
   gridTemplateColumns: "1fr 1fr",
@@ -625,6 +718,7 @@ export const chartCard = {
   borderRadius: 14,
   padding: "20px 22px",
   boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+  minWidth: 0,
 };
 
 export const chartCardHeader = {
@@ -634,7 +728,7 @@ export const chartCardHeader = {
   marginBottom: 16,
 };
 
-// Table panels
+// ─── TABLE ────────────────────────────────────────────────────────────────────
 export const tablePanel = {
   background: "#fff",
   borderRadius: 12,
@@ -650,6 +744,8 @@ export const tablePanelHeader = {
   padding: "12px 16px",
   borderBottom: "1px solid #e5e7eb",
   background: "#f8faff",
+  flexWrap: "wrap",
+  gap: 8,
 };
 
 export const tableFooterRow = {
@@ -658,10 +754,10 @@ export const tableFooterRow = {
   fontWeight: 800,
 };
 
-// Group/sub table headers
 export const groupTH = (bg) => ({
-  padding: "6px 10px",
+  padding: "8px 12px",
   textAlign: "center",
+  verticalAlign: "middle",
   color: "#fff",
   fontWeight: 800,
   fontSize: 11,
@@ -674,6 +770,8 @@ export const subTH = (bg) => ({
   ...thBase,
   background: bg,
   textAlign: "center",
+  verticalAlign: "middle",
+  fontSize: 10,
 });
 
 // ─── DATA ENTRY PAGE ──────────────────────────────────────────────────────────
@@ -688,6 +786,7 @@ export const dataEntryPanel = {
   borderRadius: 12,
   padding: 18,
   boxShadow: "0 1px 8px rgba(0,0,0,0.06)",
+  minWidth: 0,
 };
 
 export const dataEntryPanelHeader = {
@@ -723,6 +822,8 @@ export const kpiPageHeader = {
   justifyContent: "space-between",
   alignItems: "center",
   marginBottom: 18,
+  flexWrap: "wrap",
+  gap: 10,
 };
 
 export const kpiOverviewCard = {
@@ -735,7 +836,7 @@ export const kpiOverviewCard = {
 
 export const kpiMiniGrid = {
   display: "grid",
-  gridTemplateColumns: "repeat(6,1fr)",
+  gridTemplateColumns: "repeat(6, 1fr)",
   gap: 10,
   marginBottom: 20,
 };

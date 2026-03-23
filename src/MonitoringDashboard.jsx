@@ -10,21 +10,22 @@ import cardProjectsIcon    from "./assets/card_total_projects.png";
 import cardCommunitiesIcon from "./assets/card_communities.png";
 import cardAmountIcon      from "./assets/card_total_amount.png";
 import cardStatusIcon      from "./assets/card_status.png";
+import logoutIcon from "./assets/logout.png";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
 } from "recharts";
 import dashboardIcon from "./assets/dashboard.png";
 import dataentryIcon from "./assets/dataentry.png";
-import projectsIcon from "./assets/projects.png";
-import trainingIcon from "./assets/trainings.png";
+import projectsIcon  from "./assets/projects.png";
+import trainingIcon  from "./assets/trainings.png";
 import kpireportsIcon from "./assets/kpireports.png";
 import {
   IS, LS, thBase, tdBase, modalOverlay,
   noSpinnerCSS, appWrapper, toastStyle,
   sidebarWrapper, sidebarLogoSection, sidebarLogoInner, sidebarTagline,
   sidebarNav, navItem, navKpiBadge,
-  sidebarLogoutSection, sidebarLogoutBtn,
+  sidebarLogoutBtn,
   sidebarFooter, sidebarFooterTitle, sidebarFooterDivider,
   sidebarFooterCopyright, sidebarFooterTagline,
   topBar, topBarTitle, topBarRight, topBarStats, topBarIconBtn, notifDot,
@@ -76,8 +77,8 @@ function TH({ ch, style }) {
   return <th style={{ ...thBase, ...style }}>{ch}</th>;
 }
 
-function TD({ children, style }) {
-  return <td style={{ ...tdBase, ...style }}>{children}</td>;
+function TD({ children, style, className }) {
+  return <td className={className} style={{ ...tdBase, ...style }}>{children}</td>;
 }
 
 function SettingsSection({ title, children }) {
@@ -179,13 +180,12 @@ function ProjectDetailModal({ project, onClose, onEdit, onDelete }) {
             <DetailCard label="Year"                       value={p.year}         icon="📅" />
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <DetailCard label="Amount Funded"    value={fmt(p.amountFunded)}                              icon="💰" valueStyle={{ color: "#16a34a", fontWeight: 800, fontSize: 16 }} />
-            <DetailCard label="Amount per Year"  value={p.amountPerYear ? fmt(p.amountPerYear) : "—"}    icon="📆" />
-            <DetailCard label="Status"           value={p.status}                                         icon="📌" />
+            <DetailCard label="Amount Funded"    value={fmt(p.amountFunded)}                           icon="💰" valueStyle={{ color: "#16a34a", fontWeight: 800, fontSize: 16 }} />
+            <DetailCard label="Amount per Year"  value={p.amountPerYear ? fmt(p.amountPerYear) : "—"} icon="📆" />
+            <DetailCard label="Status"           value={p.status}                                      icon="📌" />
           </div>
         </div>
 
-        {/* Attached file display */}
         {p.fileData && (
           <div style={{ background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: 8, padding: "10px 14px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ fontSize: 20 }}>📎</span>
@@ -256,19 +256,10 @@ function ProjectForm({ initial, onSave, onCancel }) {
     reader.readAsDataURL(file);
   };
 
-  const clearFile = () => {
-    set("fileData", null);
-    set("fileName", "");
-    set("fileType", "");
-  };
+  const clearFile = () => { set("fileData", null); set("fileName", ""); set("fileType", ""); };
 
-  // ── Shift+Enter = bagong linya, Enter lang = save ──
   const handleProjectKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      submit();
-    }
-    // Shift+Enter — hayaan na lang ang default (bagong linya)
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); }
   };
 
   const submit = () => {
@@ -293,7 +284,6 @@ function ProjectForm({ initial, onSave, onCancel }) {
         </div>
       </div>
 
-      {/* Community */}
       <div style={{ marginBottom: 14 }}>
         <label style={LS}>Community / Beneficiaries *</label>
         <input
@@ -305,7 +295,6 @@ function ProjectForm({ initial, onSave, onCancel }) {
         {err.community && <span style={{ color: "#ef4444", fontSize: 11 }}>{err.community}</span>}
       </div>
 
-      {/* Project Title — TEXTAREA para pwedeng Shift+Enter */}
       <div style={{ marginBottom: 14 }}>
         <label style={LS}>
           Project Title *{" "}
@@ -318,17 +307,14 @@ function ProjectForm({ initial, onSave, onCancel }) {
           style={{
             ...IS,
             borderColor: err.project ? "#ef4444" : "#d1d5db",
-            minHeight: 80,
-            resize: "vertical",
-            lineHeight: 1.6,
-            fontFamily: "inherit",
+            minHeight: 80, resize: "vertical",
+            lineHeight: 1.6, fontFamily: "inherit",
           }}
           placeholder="Ilagay ang project title... (Shift+Enter para sa bagong linya)"
         />
         {err.project && <span style={{ color: "#ef4444", fontSize: 11 }}>{err.project}</span>}
       </div>
 
-      {/* File Upload — optional */}
       <div style={{ marginBottom: 14 }}>
         <label style={LS}>
           Attach Project File{" "}
@@ -341,36 +327,20 @@ function ProjectForm({ initial, onSave, onCancel }) {
             border: `1px dashed ${f.fileName ? "#86efac" : "#d1d5db"}`,
             borderRadius: 7, padding: "9px 14px", fontSize: 12,
             fontWeight: 600, color: f.fileName ? "#16a34a" : "#6b7280",
-            cursor: "pointer", flex: 1, transition: "all 0.15s",
+            cursor: "pointer", flex: 1,
           }}>
             <span style={{ fontSize: 16 }}>📎</span>
             <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {f.fileName ? f.fileName : "Click to upload a file..."}
             </span>
-            <input
-              type="file"
-              accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.xlsx,.xls,.ppt,.pptx,.txt"
-              style={{ display: "none" }}
-              onChange={handleFileChange}
-            />
+            <input type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.xlsx,.xls,.ppt,.pptx,.txt" style={{ display: "none" }} onChange={handleFileChange} />
           </label>
           {f.fileName && (
-            <button
-              type="button"
-              onClick={clearFile}
-              title="Remove file"
-              style={{
-                background: "#fef2f2", border: "1px solid #fecaca",
-                color: "#ef4444", borderRadius: 7, padding: "9px 12px",
-                fontSize: 14, cursor: "pointer", fontWeight: 700, flexShrink: 0,
-              }}
-            >✕</button>
+            <button type="button" onClick={clearFile} style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#ef4444", borderRadius: 7, padding: "9px 12px", fontSize: 14, cursor: "pointer", fontWeight: 700, flexShrink: 0 }}>✕</button>
           )}
         </div>
         {f.fileName && (
-          <div style={{ fontSize: 11, color: "#16a34a", marginTop: 5, display: "flex", alignItems: "center", gap: 4 }}>
-            <span>✓</span> <span>{f.fileName} — ready to save</span>
-          </div>
+          <div style={{ fontSize: 11, color: "#16a34a", marginTop: 5 }}>✓ {f.fileName} — ready to save</div>
         )}
       </div>
 
@@ -482,7 +452,6 @@ function EquipmentForm({ initial, onSave, onCancel }) {
         <div><label style={LS}>Year *</label><input type="number" value={f.year} onChange={e => set("year", Number(e.target.value))} style={IS} /></div>
         <div><label style={LS}>Municipality *</label><input value={f.municipality} onChange={e => set("municipality", e.target.value)} style={IS} placeholder="Enter municipality" /></div>
       </div>
-
       {[["community","Community"],["equipment","Equipment / Technology"]].map(([k, l]) => (
         <div key={k} style={{ marginBottom: 14 }}>
           <label style={LS}>{l} *</label>
@@ -490,7 +459,6 @@ function EquipmentForm({ initial, onSave, onCancel }) {
           {err[k] && <span style={{ color: "#ef4444", fontSize: 11 }}>{err[k]}</span>}
         </div>
       ))}
-
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 14 }}>
         <div>
           <label style={LS}>No. of Units *</label>
@@ -499,14 +467,12 @@ function EquipmentForm({ initial, onSave, onCancel }) {
         </div>
         <div><label style={LS}>Units per Year (optional)</label><input type="number" value={f.unitsPerYear} onChange={e => set("unitsPerYear", e.target.value)} style={IS} placeholder="—" /></div>
       </div>
-
       <div style={{ marginBottom: 22 }}>
         <label style={LS}>Component *</label>
         <select value={f.component} onChange={e => set("component", e.target.value)} style={IS}>
           {Object.entries(COMPONENTS).map(([k, v]) => <option key={k} value={k}>{k.toUpperCase()} — {v}</option>)}
         </select>
       </div>
-
       <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
         <button onClick={onCancel} style={btnSecondary}>Cancel</button>
         <button onClick={submit}   style={btnPrimary}>💾 Save Equipment</button>
@@ -552,7 +518,6 @@ function NotificationPanel({ notifications, onMarkRead, onMarkAllRead, onDelete,
           <button onClick={onClose} style={{ background: "none", border: "none", color: "#6b7280", fontSize: 18, cursor: "pointer", lineHeight: 1 }}>✕</button>
         </div>
       </div>
-
       <div style={{ maxHeight: 380, overflowY: "auto" }}>
         {notifications.length === 0 ? (
           <div style={{ padding: 40, textAlign: "center", color: "#9ca3af" }}>
@@ -573,7 +538,6 @@ function NotificationPanel({ notifications, onMarkRead, onMarkAllRead, onDelete,
           </div>
         ))}
       </div>
-
       {notifications.length > 0 && (
         <div style={{ padding: "10px 16px", borderTop: "1px solid #e5e7eb", textAlign: "center" }}>
           <button onClick={onMarkAllRead} style={{ background: "none", border: "none", color: "#6b7280", fontSize: 11, cursor: "pointer" }}>Clear all notifications</button>
@@ -627,10 +591,10 @@ function SettingsPanel({ settings, onSave, onClose }) {
         </SettingsSection>
 
         <SettingsSection title="Notification Preferences">
-          <SettingsToggle label="Project Updates"  value={s.notifProjects}  onChange={() => toggle("notifProjects")} />
-          <SettingsToggle label="Equipment Updates" value={s.notifEquipment} onChange={() => toggle("notifEquipment")} />
-          <SettingsToggle label="Budget Alerts"     value={s.notifBudget}    onChange={() => toggle("notifBudget")} />
-          <SettingsToggle label="Report Generation" value={s.notifReports}   onChange={() => toggle("notifReports")} />
+          <SettingsToggle label="Project Updates"   value={s.notifProjects}  onChange={() => toggle("notifProjects")} />
+          <SettingsToggle label="Equipment Updates"  value={s.notifEquipment} onChange={() => toggle("notifEquipment")} />
+          <SettingsToggle label="Budget Alerts"      value={s.notifBudget}    onChange={() => toggle("notifBudget")} />
+          <SettingsToggle label="Report Generation"  value={s.notifReports}   onChange={() => toggle("notifReports")} />
         </SettingsSection>
 
         <SettingsSection title="KPI Targets per Component">
@@ -663,7 +627,7 @@ function SettingsPanel({ settings, onSave, onClose }) {
       </div>
 
       <div style={settingsPanelFooter}>
-        <button onClick={onClose}                        style={btnSecondary}>Cancel</button>
+        <button onClick={onClose}                         style={btnSecondary}>Cancel</button>
         <button onClick={() => { onSave(s); onClose(); }} style={btnPrimary}>💾 Save Settings</button>
       </div>
     </div>
@@ -672,7 +636,7 @@ function SettingsPanel({ settings, onSave, onClose }) {
 
 
 // ══════════════════════════════════════════════════════════════════════════════
-// FILE BUTTON — reusable small button shown under project title in tables
+// FILE BUTTON
 // ══════════════════════════════════════════════════════════════════════════════
 function FileButton({ p }) {
   if (!p.fileData) return null;
@@ -716,6 +680,7 @@ export default function MonitoringDashboard() {
   const [showNotifs,      setShowNotifs]      = useState(false);
   const [showSettings,    setShowSettings]    = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
+  const [sidebarOpen,     setSidebarOpen]     = useState(false);
 
   const showToast = (msg, color = "#16a34a") => { setToast({ msg, color }); setTimeout(() => setToast(null), 2500); };
   const addNotif  = (type, title, message) => setNotifications(ns => [{ id: Date.now(), type, read: false, time: "Just now", title, message }, ...ns]);
@@ -774,11 +739,9 @@ export default function MonitoringDashboard() {
   });
 
   const allMunicipalities = Array.from(new Set([...projects.map(p => p.municipality), ...equipment.map(e => e.municipality)])).filter(Boolean).sort();
-
   const barData   = allMunicipalities.map(m => ({ name: m, budget: projects.filter(p => p.municipality === m).reduce((s, p) => s + Number(p.amountFunded), 0) })).filter(d => d.budget > 0);
   const maxBudget = barData.reduce((m, d) => Math.max(m, d.budget), 0);
   const fmtChart  = v => maxBudget >= 1_000_000 ? `₱${(v/1_000_000).toFixed(1)}M` : `₱${(v/1_000).toFixed(0)}k`;
-
   const compCounts  = Object.entries(COMPONENTS).map(([k]) => ({ name: k.toUpperCase(), value: projects.filter(p => p.components.includes(k)).length })).filter(d => d.value > 0);
   const muniSummary = allMunicipalities.map(m => ({ name: m, count: projects.filter(p => p.municipality === m).length })).filter(m => m.count > 0);
   const kpiCounts   = KPI_LIST.reduce((acc, k) => { acc[k.key] = projects.filter(p => p.components.includes(k.key)).length; return acc; }, {});
@@ -788,18 +751,17 @@ export default function MonitoringDashboard() {
   const BENEF_COLS = ["male","female","ips","fourps","pwd","senior","total"];
   const STAKE_COLS = ["lgu","plgu","blgu","pnp","suc","others"];
 
-  //SIDEBAR NAV icons
-const NAV_ITEMS = [
-  { id: "dashboard",  icon: dashboardIcon, label: "Dashboard",   isImage: true  },
-  { id: "dataentry",  icon: dataentryIcon,    label: "Data Entry",  isImage: true },
-  { id: "projects",   icon: projectsIcon,          label: "Projects",    isImage: true },
-  { id: "trainings",  icon: trainingIcon,          label: "Trainings",   isImage: true },
-  { id: "kpireports", icon: kpireportsIcon,          label: "KPI Reports", isImage: true },
-];
+  const NAV_ITEMS = [
+    { id: "dashboard",  icon: dashboardIcon,  label: "Dashboard",   isImage: true },
+    { id: "dataentry",  icon: dataentryIcon,  label: "Data Entry",  isImage: true },
+    { id: "projects",   icon: projectsIcon,   label: "Projects",    isImage: true },
+    { id: "trainings",  icon: trainingIcon,   label: "Trainings",   isImage: true },
+    { id: "kpireports", icon: kpireportsIcon, label: "KPI Reports", isImage: true },
+  ];
 
   const closeAll = () => { setShowNotifs(false); setShowSettings(false); };
 
-  const handleDetailEdit   = () => { setModal({ type: "editProject",   data: selectedProject }); setSelectedProject(null); };
+  const handleDetailEdit   = () => { setModal({ type: "editProject", data: selectedProject }); setSelectedProject(null); };
   const handleDetailDelete = () => {
     if (settings.confirmDelete) { setModal({ type: "deleteProject", data: selectedProject }); setSelectedProject(null); }
     else { deleteProject(selectedProject.id); setSelectedProject(null); }
@@ -817,8 +779,22 @@ const NAV_ITEMS = [
 
       {toast && <div style={toastStyle(toast.color)}>{toast.msg}</div>}
 
+      {/* Overlay para sa panels */}
       {(showNotifs || showSettings) && (
-        <div data-backdrop="true" style={{ position: "fixed", inset: 0, zIndex: 1999 }} onClick={closeAll} />
+        <div data-backdrop="true" style={{ position: "fixed", inset: 0, zIndex: 2999 }} onClick={closeAll} />
+      )}
+
+      {/* Sidebar overlay sa mobile */}
+      {sidebarOpen && (
+        <div
+          className="cest-overlay"
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: "fixed", inset: 0,
+            background: "rgba(0,0,0,0.45)",
+            zIndex: 1400,
+          }}
+        />
       )}
 
       {showNotifs   && <NotificationPanel notifications={notifications} onMarkRead={markNotifRead} onMarkAllRead={markAllRead} onDelete={deleteNotif} onClose={() => setShowNotifs(false)} />}
@@ -829,7 +805,10 @@ const NAV_ITEMS = [
       )}
 
       {/* ── SIDEBAR ── */}
-      <div style={sidebarWrapper}>
+      <div
+        style={sidebarWrapper}
+        className={`cest-sidebar${sidebarOpen ? " open" : ""}`}
+      >
         <div style={sidebarLogoSection}>
           <div style={sidebarLogoInner}>
             <img src={logo} alt="CEST Logo" style={{ width: 100, height: 100, borderRadius: 12, objectFit: "contain" }} />
@@ -838,22 +817,40 @@ const NAV_ITEMS = [
         </div>
 
         <nav style={sidebarNav}>
-  {NAV_ITEMS.map(n => (
-    <button key={n.id} onClick={() => setActivePage(n.id)} style={navItem(activePage === n.id)}>
-      {/* ✅ GANITO — may check kung image o emoji */}
-      {n.isImage
-        ? <img src={n.icon} alt={n.label} width={20} height={20} style={{ objectFit: "contain", flexShrink: 0 }} />
-        : <span style={{ fontSize: 16 }}>{n.icon}</span>
-      }
-      {n.label}
-      {n.id === "kpireports" && <span style={navKpiBadge}>{Object.keys(COMPONENTS).length}</span>}
-    </button>
-  ))}
-</nav>
+          {NAV_ITEMS.map(n => (
+            <button
+              key={n.id}
+              onClick={() => { setActivePage(n.id); setSidebarOpen(false); }}
+              style={{ ...navItem(activePage === n.id), transition: "background 0.2s ease, color 0.2s ease, padding-left 0.2s ease" }}
+              onMouseEnter={e => {
+                if (activePage !== n.id) {
+                  e.currentTarget.style.background = "#eff6ff";
+                  e.currentTarget.style.color = "#1e40af";
+                  e.currentTarget.style.paddingLeft = "18px";
+                }
+              }}
+              onMouseLeave={e => {
+                if (activePage !== n.id) {
+                  e.currentTarget.style.background = "transparent";
+                  e.currentTarget.style.color = "#374151";
+                  e.currentTarget.style.paddingLeft = "14px";
+                }
+              }}
+            >
+              {n.isImage
+                ? <img src={n.icon} alt={n.label} width={20} height={20} style={{ objectFit: "contain", flexShrink: 0 }} />
+                : <span style={{ fontSize: 16 }}>{n.icon}</span>
+              }
+              {n.label}
+              {n.id === "kpireports" && <span style={navKpiBadge}>{Object.keys(COMPONENTS).length}</span>}
+            </button>
+          ))}
+        </nav>
 
-        <div style={sidebarLogoutSection}>
-          <button style={sidebarLogoutBtn}><span>🚪</span> Logout</button>
-        </div>
+        <button style={sidebarLogoutBtn}>
+          <img src={logoutIcon} width={20} height={20} alt="Logout" style={{ objectFit: "contain" }} />
+          Logout
+        </button>
 
         <div style={sidebarFooter}>
           <div style={sidebarFooterTitle}>CEST 2.0</div>
@@ -869,9 +866,29 @@ const NAV_ITEMS = [
 
         {/* Top Bar */}
         <div style={topBar}>
+          {/* Hamburger button — visible sa ≤1024px */}
+          <button
+            className="cest-hamburger"
+            onClick={() => setSidebarOpen(v => !v)}
+            style={{
+              display: "none",
+              background: "rgba(255,255,255,0.15)",
+              border: "none", color: "#fff",
+              fontSize: 22, borderRadius: 8,
+              width: 38, height: 38,
+              cursor: "pointer",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >☰</button>
+
           <h1 style={topBarTitle}>{NAV_ITEMS.find(n => n.id === activePage)?.label}</h1>
+
           <div style={topBarRight}>
-            <span style={topBarStats}>{projects.length} Projects · {uniqueComm} Communities</span>
+            <span className="cest-top-stats" style={topBarStats}>
+              {projects.length} Projects · {uniqueComm} Communities
+            </span>
             <button onClick={e => { e.stopPropagation(); setShowSettings(false); setShowNotifs(v => !v); }} style={topBarIconBtn(showNotifs)}>
               🔔
               {unreadCount > 0 && <span style={notifDot}>{unreadCount > 9 ? "9+" : unreadCount}</span>}
@@ -883,32 +900,41 @@ const NAV_ITEMS = [
         </div>
 
         {/* Page Content */}
-        <div style={pageContent}>
+        <div style={{ ...pageContent, animation: "fadeIn 0.3s ease" }}>
 
 
           {/* ══ DASHBOARD PAGE ══ */}
           {activePage === "dashboard" && (
             <div>
               {/* Summary Cards */}
-              <div style={summaryGrid}>
+              <div className="cest-summary-grid" style={summaryGrid}>
                 {[
-                  { label: "Total Projects",        value: projects.length,                 icon: cardProjectsIcon,    bg: "linear-gradient(135deg,#1e40af,#3b82f6)" },
-{ label: "Communities",           value: uniqueComm,                                        icon: cardCommunitiesIcon, bg: "linear-gradient(135deg,#16a34a,#4ade80)" },
-{ label: "Total Amount Assisted", value: fmt(totalFunds),                                   icon: cardAmountIcon,      bg: "linear-gradient(135deg,#7c3aed,#a78bfa)" },
-{ label: "Status",                value: `${activeCount} Ongoing / ${doneCount} Finished`, icon: cardStatusIcon,      bg: "linear-gradient(135deg,#d97706,#fbbf24)" },
+                  { label: "Total Projects",        value: projects.length,                                icon: cardProjectsIcon,    bg: "linear-gradient(135deg,#1e40af,#3b82f6)" },
+                  { label: "Communities",            value: uniqueComm,                                     icon: cardCommunitiesIcon, bg: "linear-gradient(135deg,#16a34a,#4ade80)" },
+                  { label: "Total Amount Assisted", value: fmt(totalFunds),                                icon: cardAmountIcon,      bg: "linear-gradient(135deg,#7c3aed,#a78bfa)" },
+                  { label: "Status",                value: `${activeCount} Ongoing / ${doneCount} Finished`, icon: cardStatusIcon,   bg: "linear-gradient(135deg,#d97706,#fbbf24)" },
                 ].map(s => (
-                  <div key={s.label} style={summaryCard(s.bg)}>
+                  <div
+                    key={s.label}
+                    style={{
+                      ...summaryCard(s.bg),
+                      transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                      cursor: "pointer",
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 12px 32px rgba(0,0,0,0.2)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = ""; }}
+                  >
                     <div>
                       <div style={summaryCardLabel}>{s.label}</div>
                       <div style={{ fontSize: typeof s.value === "string" ? 15 : 28, fontWeight: 900, color: "#fff" }}>{s.value}</div>
                     </div>
-                    <img src={s.icon} width={48} height={48} alt={s.label} style={{ opacity: 0.9 }} />
+                    <img src={s.icon} width={48} height={48} alt={s.label} style={{ opacity: 0.9, flexShrink: 0 }} />
                   </div>
                 ))}
               </div>
 
               {/* Filter Bar */}
-              <div style={filterBarRow}>
+              <div className="cest-filter-bar" style={filterBarRow}>
                 <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search project, community, municipality..." style={{ ...IS, flex: 1, minWidth: 240, boxShadow: "0 1px 4px rgba(0,0,0,0.07)" }} />
                 <select value={yearFilter}     onChange={e => setYearFilter(e.target.value)}     style={{ ...IS, width: "auto", minWidth: 100, boxShadow: "0 1px 4px rgba(0,0,0,0.07)" }}>{years.map(y => <option key={y}>{y}</option>)}</select>
                 <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} style={{ ...IS, width: "auto", minWidth: 180, boxShadow: "0 1px 4px rgba(0,0,0,0.07)" }}>
@@ -923,7 +949,7 @@ const NAV_ITEMS = [
 
               {/* Charts */}
               {settings.showCharts && !search && yearFilter === "All" && categoryFilter === "All" && statusFilter === "All" && (
-                <div style={chartGrid}>
+                <div className="cest-chart-grid" style={chartGrid}>
                   <div style={chartCard}>
                     <div style={chartCardHeader}>
                       <div>
@@ -996,21 +1022,21 @@ const NAV_ITEMS = [
                   <span style={{ fontSize: 12, color: "#6b7280" }}>{filteredP.length} entries · Total: {fmt(filteredP.reduce((s, p) => s + Number(p.amountFunded), 0))}</span>
                 </div>
                 <div style={{ overflowX: "auto" }}>
-                  <table className="dashboard-projects-table" style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                  <table className="cest-table" style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
                     <thead>
                       <tr>
-                        <th rowSpan={3} style={{ ...thBase, verticalAlign: "middle", textAlign: "center" }}>No.</th>
-                        <th rowSpan={3} style={{ ...thBase, verticalAlign: "middle", textAlign: "center" }}>Year</th>
-                        <th rowSpan={3} style={{ ...thBase, verticalAlign: "middle" }}>Municipality / City</th>
-                        <th rowSpan={3} style={{ ...thBase, verticalAlign: "middle" }}>Community / Beneficiaries</th>
-                        <th rowSpan={3} style={{ ...thBase, verticalAlign: "middle" }}>List of Projects Funded</th>
-                        <th rowSpan={3} style={{ ...thBase, verticalAlign: "middle", textAlign: "center" }}>Amount Funded</th>
-                        <th rowSpan={3} style={{ ...thBase, verticalAlign: "middle", textAlign: "center" }}>Amount / Year</th>
+                        <th rowSpan={3} style={{ ...thBase, verticalAlign: "middle", textAlign: "center", minWidth: 40 }}>No.</th>
+                        <th rowSpan={3} style={{ ...thBase, verticalAlign: "middle", textAlign: "center", minWidth: 50 }}>Year</th>
+                        <th rowSpan={3} style={{ ...thBase, verticalAlign: "middle", textAlign: "left",   minWidth: 120 }}>Municipality / City</th>
+                        <th rowSpan={3} style={{ ...thBase, verticalAlign: "middle", textAlign: "left",   minWidth: 130 }}>Community / Beneficiaries</th>
+                        <th rowSpan={3} style={{ ...thBase, verticalAlign: "middle", textAlign: "left",   minWidth: 180 }}>List of Projects Funded</th>
+                        <th rowSpan={3} style={{ ...thBase, verticalAlign: "middle", textAlign: "right",  minWidth: 110 }}>Amount Funded</th>
+                        <th rowSpan={3} style={{ ...thBase, verticalAlign: "middle", textAlign: "right",  minWidth: 100 }}>Amount / Year</th>
                         <th colSpan={COMP_KEYS.length}  style={groupTH("#1e3a8f")}>CEST 2.0 Components</th>
                         <th colSpan={COMM_KEYS.length}  style={groupTH("#0369a1")}>Community Types</th>
                         <th colSpan={7}                 style={groupTH("#166534")}>No. of Beneficiaries</th>
                         <th colSpan={STAKE_COLS.length} style={groupTH("#5b21b6")}>Stakeholders</th>
-                        <th rowSpan={3} style={{ ...thBase, verticalAlign: "middle", textAlign: "center" }}>Status</th>
+                        <th rowSpan={3} style={{ ...thBase, verticalAlign: "middle", textAlign: "center", minWidth: 90 }}>Status</th>
                       </tr>
                       <tr>
                         {[["SEL","#1e3a8f"],["H&N","#166534"],["HRD","#5b21b6"],["DRRM","#991b1b"],["BGCET","#064e3b"],["DG","#92400e"]].map(([lbl, bg]) => (
@@ -1039,36 +1065,36 @@ const NAV_ITEMS = [
                         const sc = statusColor(p.status);
                         return (
                           <tr key={p.id} style={{ background: i % 2 === 0 ? "#fff" : "#f8faff" }}>
-                            <TD style={{ color: "#9ca3af", textAlign: "center" }}>{p.id}</TD>
-                            <TD style={{ fontWeight: 700, color: "#1e40af", textAlign: "center" }}>{p.year}</TD>
-                            <TD style={{ color: "#1e40af", fontWeight: 600 }}>{p.municipality}</TD>
-                            <TD>{p.community}</TD>
-                            <TD style={{ maxWidth: 220 }}>
-                              <div style={{ fontSize: 12, fontWeight: 700, color: "#111827", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-                                {p.project}
-                              </div>
+                            <TD className="col-center" style={{ color: "#9ca3af" }}>{p.id}</TD>
+                            <TD className="col-center" style={{ fontWeight: 700, color: "#1e40af" }}>{p.year}</TD>
+                            <TD className="col-text"   style={{ color: "#1e40af", fontWeight: 600 }}>{p.municipality}</TD>
+                            <TD className="col-text">{p.community}</TD>
+                            <TD className="col-text" style={{ maxWidth: 220 }}>
+                              <div style={{ fontSize: 12, fontWeight: 700, color: "#111827", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{p.project}</div>
                               <FileButton p={p} />
                             </TD>
-                            <TD style={{ color: "#16a34a", fontWeight: 700, whiteSpace: "nowrap", textAlign: "right" }}>{fmt(p.amountFunded)}</TD>
-                            <TD style={{ whiteSpace: "nowrap", textAlign: "right" }}>{fmt(p.amountPerYear)}</TD>
-                            {COMP_KEYS.map(c => <TD key={c} style={{ textAlign: "center" }}>{p.components.includes(c) ? <span style={{ color: COMP_COLORS[c], fontWeight: 900, fontSize: 14 }}>✓</span> : ""}</TD>)}
-                            {COMM_KEYS.map(c => <TD key={c} style={{ textAlign: "center" }}>{(p.communities||[]).includes(c) ? <span style={{ color: COMMUNITY_COLORS[c], fontWeight: 900, fontSize: 14 }}>✓</span> : ""}</TD>)}
-                            <TD style={{ textAlign: "center" }}>{p.beneficiaries?.male   || ""}</TD>
-                            <TD style={{ textAlign: "center" }}>{p.beneficiaries?.female || ""}</TD>
-                            <TD style={{ textAlign: "center" }}>{p.beneficiaries?.ips    || ""}</TD>
-                            <TD style={{ textAlign: "center" }}>{p.beneficiaries?.fourps || ""}</TD>
-                            <TD style={{ textAlign: "center" }}>{p.beneficiaries?.pwd    || ""}</TD>
-                            <TD style={{ textAlign: "center" }}>{p.beneficiaries?.senior || ""}</TD>
-                            <TD style={{ textAlign: "center", fontWeight: 700 }}>{p.beneficiaries?.total || ""}</TD>
-                            <TD style={{ textAlign: "center" }}>{p.stakeholders?.lgu  || ""}</TD>
-                            <TD style={{ textAlign: "center" }}>{p.stakeholders?.plgu || ""}</TD>
-                            <TD style={{ textAlign: "center" }}>{p.stakeholders?.blgu || ""}</TD>
-                            <TD style={{ textAlign: "center" }}>{p.stakeholders?.pnp  || ""}</TD>
-                            <TD style={{ textAlign: "center" }}>{p.stakeholders?.suc  || ""}</TD>
-                            <TD style={{ textAlign: "center", maxWidth: 80 }}>
+                            <TD className="col-right" style={{ color: "#16a34a", fontWeight: 700, whiteSpace: "nowrap" }}>{fmt(p.amountFunded)}</TD>
+                            <TD className="col-right" style={{ whiteSpace: "nowrap" }}>{fmt(p.amountPerYear)}</TD>
+                            {COMP_KEYS.map(c => <TD key={c} className="col-center">{p.components.includes(c) ? <span style={{ color: COMP_COLORS[c], fontWeight: 900, fontSize: 14 }}>✓</span> : ""}</TD>)}
+                            {COMM_KEYS.map(c => <TD key={c} className="col-center">{(p.communities||[]).includes(c) ? <span style={{ color: COMMUNITY_COLORS[c], fontWeight: 900, fontSize: 14 }}>✓</span> : ""}</TD>)}
+                            <TD className="col-center">{p.beneficiaries?.male   || ""}</TD>
+                            <TD className="col-center">{p.beneficiaries?.female || ""}</TD>
+                            <TD className="col-center">{p.beneficiaries?.ips    || ""}</TD>
+                            <TD className="col-center">{p.beneficiaries?.fourps || ""}</TD>
+                            <TD className="col-center">{p.beneficiaries?.pwd    || ""}</TD>
+                            <TD className="col-center">{p.beneficiaries?.senior || ""}</TD>
+                            <TD className="col-center" style={{ fontWeight: 700 }}>{p.beneficiaries?.total || ""}</TD>
+                            <TD className="col-center">{p.stakeholders?.lgu  || ""}</TD>
+                            <TD className="col-center">{p.stakeholders?.plgu || ""}</TD>
+                            <TD className="col-center">{p.stakeholders?.blgu || ""}</TD>
+                            <TD className="col-center">{p.stakeholders?.pnp  || ""}</TD>
+                            <TD className="col-center">{p.stakeholders?.suc  || ""}</TD>
+                            <TD className="col-center" style={{ maxWidth: 80 }}>
                               {p.stakeholders?.others ? <span title={p.stakeholders?.othersLabel || ""}>{p.stakeholders.others}{p.stakeholders?.othersLabel ? ` (${p.stakeholders.othersLabel})` : ""}</span> : ""}
                             </TD>
-                            <TD><span style={{ background: sc.bg, color: sc.color, borderRadius: 20, padding: "2px 9px", fontSize: 11, fontWeight: 700 }}>{p.status}</span></TD>
+                            <TD className="col-center">
+                              <span style={{ background: sc.bg, color: sc.color, borderRadius: 20, padding: "2px 9px", fontSize: 11, fontWeight: 700 }}>{p.status}</span>
+                            </TD>
                           </tr>
                         );
                       })}
@@ -1078,12 +1104,12 @@ const NAV_ITEMS = [
                     </tbody>
                     <tfoot>
                       <tr style={tableFooterRow}>
-                        <td colSpan={5} style={{ padding: "8px 10px", fontSize: 12 }}>Total No. of Funded Projects: {filteredP.length}</td>
-                        <td style={{ padding: "8px 10px", fontSize: 12, whiteSpace: "nowrap", textAlign: "right" }}>{fmt(filteredP.reduce((s, p) => s + Number(p.amountFunded), 0))}</td>
-                        <td style={{ padding: "8px 10px", fontSize: 12, whiteSpace: "nowrap", textAlign: "right" }}>{fmt(filteredP.reduce((s, p) => s + Number(p.amountPerYear), 0))}</td>
-                        {COMP_KEYS.map(c  => <td key={c}  style={{ padding: "8px 10px", fontSize: 12, textAlign: "center" }}>{filteredP.filter(p => p.components.includes(c)).length || ""}</td>)}
-                        {COMM_KEYS.map(c  => <td key={c}  style={{ padding: "8px 10px", fontSize: 12, textAlign: "center" }}>{filteredP.filter(p => (p.communities||[]).includes(c)).length || ""}</td>)}
-                        <td colSpan={BENEF_COLS.length + STAKE_COLS.length + 1} style={{ padding: "8px 10px" }} />
+                        <td colSpan={5} style={{ padding: "8px 12px", fontSize: 12, textAlign: "left" }}>Total No. of Funded Projects: {filteredP.length}</td>
+                        <td style={{ padding: "8px 12px", fontSize: 12, whiteSpace: "nowrap", textAlign: "right" }}>{fmt(filteredP.reduce((s, p) => s + Number(p.amountFunded), 0))}</td>
+                        <td style={{ padding: "8px 12px", fontSize: 12, whiteSpace: "nowrap", textAlign: "right" }}>{fmt(filteredP.reduce((s, p) => s + Number(p.amountPerYear), 0))}</td>
+                        {COMP_KEYS.map(c => <td key={c} style={{ padding: "8px 12px", fontSize: 12, textAlign: "center" }}>{filteredP.filter(p => p.components.includes(c)).length || ""}</td>)}
+                        {COMM_KEYS.map(c => <td key={c} style={{ padding: "8px 12px", fontSize: 12, textAlign: "center" }}>{filteredP.filter(p => (p.communities||[]).includes(c)).length || ""}</td>)}
+                        <td colSpan={BENEF_COLS.length + STAKE_COLS.length + 1} style={{ padding: "8px 12px" }} />
                       </tr>
                     </tfoot>
                   </table>
@@ -1097,30 +1123,37 @@ const NAV_ITEMS = [
                     List of Equipment / Technologies Deployed
                   </div>
                   <div style={{ overflowX: "auto" }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                    <table className="cest-table" style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
                       <thead>
                         <tr>
-                          <TH ch="Year" /><TH ch="Municipality/City" /><TH ch="Community/Beneficiaries" />
-                          <TH ch="List of Equipment/Technologies Deployed" /><TH ch="No. of Units" /><TH ch="No. of Units per year" /><TH ch="Component" />
+                          <TH ch="Year"                                    style={{ textAlign: "center" }} />
+                          <TH ch="Municipality/City"                        style={{ textAlign: "left" }} />
+                          <TH ch="Community/Beneficiaries"                  style={{ textAlign: "left" }} />
+                          <TH ch="List of Equipment/Technologies Deployed"  style={{ textAlign: "left" }} />
+                          <TH ch="No. of Units"                             style={{ textAlign: "center" }} />
+                          <TH ch="No. of Units per year"                    style={{ textAlign: "center" }} />
+                          <TH ch="Component"                                style={{ textAlign: "center" }} />
                         </tr>
                       </thead>
                       <tbody>
                         {equipment.map((e, i) => (
                           <tr key={e.id} style={{ background: i % 2 === 0 ? "#fff" : "#f8faff" }}>
-                            <TD style={{ fontWeight: 700, color: "#1e40af" }}>{e.year}</TD>
-                            <TD style={{ color: "#1e40af", fontWeight: 600 }}>{e.municipality}</TD>
-                            <TD>{e.community}</TD>
-                            <TD>{e.equipment}</TD>
-                            <TD style={{ textAlign: "center" }}>{e.units}</TD>
-                            <TD style={{ textAlign: "center" }}>{e.unitsPerYear ?? "—"}</TD>
-                            <TD><span style={{ background: COMP_COLORS[e.component]+"22", color: COMP_COLORS[e.component], borderRadius: 4, padding: "2px 7px", fontSize: 10, fontWeight: 800, textTransform: "uppercase" }}>{e.component}</span></TD>
+                            <TD className="col-center" style={{ fontWeight: 700, color: "#1e40af" }}>{e.year}</TD>
+                            <TD className="col-text"   style={{ color: "#1e40af", fontWeight: 600 }}>{e.municipality}</TD>
+                            <TD className="col-text">{e.community}</TD>
+                            <TD className="col-text">{e.equipment}</TD>
+                            <TD className="col-center">{e.units}</TD>
+                            <TD className="col-center">{e.unitsPerYear ?? "—"}</TD>
+                            <TD className="col-center">
+                              <span style={{ background: COMP_COLORS[e.component]+"22", color: COMP_COLORS[e.component], borderRadius: 4, padding: "2px 7px", fontSize: 10, fontWeight: 800, textTransform: "uppercase" }}>{e.component}</span>
+                            </TD>
                           </tr>
                         ))}
                       </tbody>
                       <tfoot>
                         <tr style={tableFooterRow}>
-                          <td colSpan={4} style={{ padding: "8px 10px", fontSize: 12 }}>Total No. of Units</td>
-                          <td style={{ padding: "8px 10px", fontSize: 12, textAlign: "center" }}>{equipment.reduce((s, e) => s + Number(e.units), 0)}</td>
+                          <td colSpan={4} style={{ padding: "8px 12px", fontSize: 12, textAlign: "left" }}>Total No. of Units</td>
+                          <td style={{ padding: "8px 12px", fontSize: 12, textAlign: "center" }}>{equipment.reduce((s, e) => s + Number(e.units), 0)}</td>
                           <td colSpan={2} />
                         </tr>
                       </tfoot>
@@ -1136,18 +1169,23 @@ const NAV_ITEMS = [
                     Number of Projects Funded in the Province
                   </div>
                   <div style={{ overflowX: "auto" }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
-                      <thead><tr><TH ch="Place" /><TH ch="No. of Projects" /></tr></thead>
+                    <table className="cest-table" style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                      <thead>
+                        <tr>
+                          <TH ch="Place"           style={{ textAlign: "left" }} />
+                          <TH ch="No. of Projects" style={{ textAlign: "center" }} />
+                        </tr>
+                      </thead>
                       <tbody>
                         {muniSummary.map((m, i) => (
                           <tr key={m.name} style={{ background: i % 2 === 0 ? "#fff" : "#f8faff" }}>
-                            <TD style={{ color: "#1e40af", fontWeight: 600 }}>{m.name}</TD>
-                            <TD style={{ textAlign: "center", fontWeight: 700 }}>{m.count}</TD>
+                            <TD className="col-text"   style={{ color: "#1e40af", fontWeight: 600 }}>{m.name}</TD>
+                            <TD className="col-center" style={{ fontWeight: 700 }}>{m.count}</TD>
                           </tr>
                         ))}
                         <tr style={tableFooterRow}>
-                          <td style={{ padding: "8px 10px", fontSize: 12 }}>Total</td>
-                          <td style={{ padding: "8px 10px", fontSize: 12, textAlign: "center" }}>{projects.length}</td>
+                          <td style={{ padding: "8px 12px", fontSize: 12, textAlign: "left" }}>Total</td>
+                          <td style={{ padding: "8px 12px", fontSize: 12, textAlign: "center" }}>{projects.length}</td>
                         </tr>
                       </tbody>
                     </table>
@@ -1161,7 +1199,7 @@ const NAV_ITEMS = [
           {/* ══ DATA ENTRY PAGE ══ */}
           {activePage === "dataentry" && (
             <div>
-              <div style={dataEntryGrid}>
+              <div className="cest-data-entry-grid" style={dataEntryGrid}>
                 {/* Projects panel */}
                 <div style={dataEntryPanel}>
                   <div style={dataEntryPanelHeader}>
@@ -1174,19 +1212,13 @@ const NAV_ITEMS = [
                       return (
                         <div key={p.id} style={dataEntryItem}>
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: "#111827", marginBottom: 3, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-                              {p.project}
-                            </div>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: "#111827", marginBottom: 3, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{p.project}</div>
                             <div style={{ fontSize: 11, color: "#6b7280", marginTop: 2 }}>{p.municipality} · {p.year} · {fmt(p.amountFunded)}</div>
                             <div style={{ display: "flex", gap: 4, marginTop: 4, flexWrap: "wrap", alignItems: "center" }}>
                               <span style={{ background: sc.bg, color: sc.color, borderRadius: 20, padding: "1px 8px", fontSize: 10, fontWeight: 700 }}>{p.status}</span>
                               {p.components.map(c => <span key={c} style={{ background: COMP_COLORS[c], color: "#fff", borderRadius: 4, padding: "1px 6px", fontSize: 9, fontWeight: 800, textTransform: "uppercase" }}>{c}</span>)}
                               {p.fileData && (
-                                <button
-                                  onClick={() => openUploadedFile(p.fileData, p.fileName)}
-                                  title={p.fileName}
-                                  style={{ background: "#eff6ff", border: "1px solid #bfdbfe", color: "#1e40af", borderRadius: 4, padding: "1px 7px", fontSize: 9, fontWeight: 700, cursor: "pointer" }}
-                                >📎 {p.fileName || "File"}</button>
+                                <button onClick={() => openUploadedFile(p.fileData, p.fileName)} title={p.fileName} style={{ background: "#eff6ff", border: "1px solid #bfdbfe", color: "#1e40af", borderRadius: 4, padding: "1px 7px", fontSize: 9, fontWeight: 700, cursor: "pointer" }}>📎 {p.fileName || "File"}</button>
                               )}
                             </div>
                           </div>
@@ -1234,7 +1266,7 @@ const NAV_ITEMS = [
             <div>
               <div style={projectsPageHeader}>
                 <h2 style={{ margin: 0, fontSize: 15, color: "#111827", fontWeight: 800 }}>All Funded Projects</h2>
-                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
                   <select value={yearFilter}   onChange={e => setYearFilter(e.target.value)}   style={{ ...IS, width: "auto" }}>{years.map(y => <option key={y}>{y}</option>)}</select>
                   <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ ...IS, width: "auto" }}>
                     <option value="All">All Status</option>
@@ -1246,12 +1278,19 @@ const NAV_ITEMS = [
 
               <div style={{ background: "#fff", borderRadius: 12, boxShadow: "0 1px 8px rgba(0,0,0,0.06)", overflow: "hidden" }}>
                 <div style={{ overflowX: "auto" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                  <table className="cest-table" style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
                     <thead>
                       <tr>
-                        <TH ch="#" /><TH ch="Year" /><TH ch="Municipality" /><TH ch="Community" />
-                        <TH ch="Project" /><TH ch="Amount Funded" /><TH ch="Amt/Year" />
-                        <TH ch="Components" /><TH ch="Status" /><TH ch="Actions" />
+                        <TH ch="#"              style={{ textAlign: "center", minWidth: 40 }} />
+                        <TH ch="Year"           style={{ textAlign: "center", minWidth: 60 }} />
+                        <TH ch="Municipality"   style={{ textAlign: "left",   minWidth: 110 }} />
+                        <TH ch="Community"      style={{ textAlign: "left",   minWidth: 110 }} />
+                        <TH ch="Project"        style={{ textAlign: "left",   minWidth: 180 }} />
+                        <TH ch="Amount Funded"  style={{ textAlign: "right",  minWidth: 110 }} />
+                        <TH ch="Amt/Year"       style={{ textAlign: "right",  minWidth: 90 }} />
+                        <TH ch="Components"     style={{ textAlign: "center", minWidth: 100 }} />
+                        <TH ch="Status"         style={{ textAlign: "center", minWidth: 90 }} />
+                        <TH ch="Actions"        style={{ textAlign: "center", minWidth: 90 }} />
                       </tr>
                     </thead>
                     <tbody>
@@ -1259,27 +1298,29 @@ const NAV_ITEMS = [
                         const sc = statusColor(p.status);
                         return (
                           <tr key={p.id} style={{ borderBottom: "1px solid #f3f4f6", background: i % 2 === 0 ? "#fff" : "#fafafa" }}>
-                            <TD style={{ color: "#9ca3af" }}>{p.id}</TD>
-                            <TD style={{ fontWeight: 700 }}>{p.year}</TD>
-                            <TD style={{ color: "#1e40af", fontWeight: 600 }}>{p.municipality}</TD>
-                            <TD style={{ maxWidth: 130 }}><div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 130 }}>{p.community}</div></TD>
-                            <TD style={{ maxWidth: 200 }}>
-                              <div style={{ fontSize: 12, fontWeight: 700, color: "#111827", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-                                {p.project}
-                              </div>
+                            <TD className="col-center" style={{ color: "#9ca3af" }}>{p.id}</TD>
+                            <TD className="col-center" style={{ fontWeight: 700 }}>{p.year}</TD>
+                            <TD className="col-text"   style={{ color: "#1e40af", fontWeight: 600 }}>{p.municipality}</TD>
+                            <TD className="col-text"   style={{ maxWidth: 130 }}>
+                              <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 130 }}>{p.community}</div>
+                            </TD>
+                            <TD className="col-text" style={{ maxWidth: 200 }}>
+                              <div style={{ fontSize: 12, fontWeight: 700, color: "#111827", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{p.project}</div>
                               <FileButton p={p} />
                             </TD>
-                            <TD style={{ color: "#16a34a", fontWeight: 700, whiteSpace: "nowrap" }}>{fmt(p.amountFunded)}</TD>
-                            <TD style={{ whiteSpace: "nowrap" }}>{fmt(p.amountPerYear)}</TD>
-                            <TD>
-                              <div style={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
+                            <TD className="col-right" style={{ color: "#16a34a", fontWeight: 700, whiteSpace: "nowrap" }}>{fmt(p.amountFunded)}</TD>
+                            <TD className="col-right" style={{ whiteSpace: "nowrap" }}>{fmt(p.amountPerYear)}</TD>
+                            <TD className="col-center">
+                              <div style={{ display: "flex", gap: 3, flexWrap: "wrap", justifyContent: "center" }}>
                                 {p.components.map(c => <span key={c} style={{ background: COMP_COLORS[c], color: "#fff", borderRadius: 4, padding: "2px 6px", fontSize: 9, fontWeight: 800, textTransform: "uppercase" }}>{c}</span>)}
                                 {!p.components.length && <span style={{ color: "#9ca3af" }}>—</span>}
                               </div>
                             </TD>
-                            <TD><span style={{ background: sc.bg, color: sc.color, borderRadius: 20, padding: "2px 9px", fontSize: 10, fontWeight: 700 }}>{p.status}</span></TD>
-                            <TD>
-                              <div style={{ display: "flex", gap: 4 }}>
+                            <TD className="col-center">
+                              <span style={{ background: sc.bg, color: sc.color, borderRadius: 20, padding: "2px 9px", fontSize: 10, fontWeight: 700 }}>{p.status}</span>
+                            </TD>
+                            <TD className="col-center">
+                              <div style={{ display: "flex", gap: 4, justifyContent: "center" }}>
                                 <button onClick={() => setModal({ type: "editProject",   data: p })} style={btnSmallBlue}>Edit</button>
                                 <button onClick={() => settings.confirmDelete ? setModal({ type: "deleteProject", data: p }) : deleteProject(p.id)} style={btnSmallDanger}>Del</button>
                               </div>
@@ -1322,12 +1363,12 @@ const NAV_ITEMS = [
                     const pct    = target > 0 ? Math.min(Math.round((actual/target)*100), 100) : 0;
                     const color  = pct >= 100 ? "#16a34a" : pct >= 60 ? "#d97706" : "#ef4444";
                     return (
-                      <div key={k.key} style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                      <div key={k.key} style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 8, width: 200, flexShrink: 0 }}>
                           <span style={{ width: 26, height: 26, borderRadius: 6, background: k.color, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 900, flexShrink: 0 }}>{k.key.slice(0,2).toUpperCase()}</span>
                           <span style={{ fontSize: 12, fontWeight: 700, color: "#374151", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{k.title}</span>
                         </div>
-                        <div style={{ flex: 1, height: 14, background: "#f3f4f6", borderRadius: 7, overflow: "hidden" }}>
+                        <div style={{ flex: 1, minWidth: 120, height: 14, background: "#f3f4f6", borderRadius: 7, overflow: "hidden" }}>
                           <div style={{ width: `${pct}%`, height: "100%", background: `linear-gradient(90deg,${k.color},${k.color}cc)`, borderRadius: 7, transition: "width 0.3s" }} />
                         </div>
                         <div style={{ width: 90, flexShrink: 0, display: "flex", alignItems: "center", gap: 6 }}>
@@ -1341,7 +1382,7 @@ const NAV_ITEMS = [
               </div>
 
               {/* KPI Mini Cards */}
-              <div style={kpiMiniGrid}>
+              <div className="cest-kpi-mini-grid" style={kpiMiniGrid}>
                 {KPI_LIST.map(k => {
                   const actual = kpiCounts[k.key];
                   const target = settings.targets?.[k.key] ?? k.target;
@@ -1373,13 +1414,13 @@ const NAV_ITEMS = [
 
                   return (
                     <div key={k.id} style={kpiDetailCard(k.color)}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 20px", borderBottom: "1px solid #f3f4f6" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 20px", borderBottom: "1px solid #f3f4f6", flexWrap: "wrap" }}>
                         <span style={{ background: k.color, color: "#fff", borderRadius: 8, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 15, flexShrink: 0 }}>{k.id}</span>
-                        <div style={{ flex: 1 }}>
+                        <div style={{ flex: 1, minWidth: 140 }}>
                           <div style={{ fontSize: 14, fontWeight: 900, color: "#111827" }}>{k.title}</div>
                           <div style={{ fontSize: 11, color: "#6b7280", marginTop: 2 }}><strong style={{ color: k.color }}>{k.key.toUpperCase()}</strong> · {COMPONENTS[k.key]}</div>
                         </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                           <div style={{ textAlign: "center" }}>
                             <div style={{ fontSize: 11, color: "#6b7280", marginBottom: 4 }}>Progress</div>
                             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -1420,41 +1461,45 @@ const NAV_ITEMS = [
                       {relProjects.length > 0 && (
                         <div style={{ padding: "0 20px 16px" }}>
                           <div style={{ fontSize: 11, fontWeight: 800, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>Projects Under This Component</div>
-                          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11, background: "#f9fafb", borderRadius: 7, overflow: "hidden" }}>
-                            <thead>
-                              <tr style={{ background: k.color+"20", color: k.color }}>
-                                {["Year","Municipality","Project","Amount","Beneficiaries","Status"].map(h => <th key={h} style={{ padding: "7px 10px", textAlign: "left", fontWeight: 700, fontSize: 11 }}>{h}</th>)}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {relProjects.map(p => {
-                                const sc = statusColor(p.status);
-                                return (
-                                  <tr key={p.id} style={{ borderTop: "1px solid #e5e7eb" }}>
-                                    <td style={{ padding: "7px 10px", fontWeight: 700 }}>{p.year}</td>
-                                    <td style={{ padding: "7px 10px", color: "#1e40af", fontWeight: 600 }}>{p.municipality}</td>
-                                    <td style={{ padding: "7px 10px", maxWidth: 200 }}>
-                                      <div style={{ fontSize: 11, fontWeight: 700, color: "#111827", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-                                        {p.project}
-                                      </div>
-                                      <FileButton p={p} />
-                                    </td>
-                                    <td style={{ padding: "7px 10px", color: "#16a34a", fontWeight: 700, whiteSpace: "nowrap" }}>{fmt(p.amountFunded)}</td>
-                                    <td style={{ padding: "7px 10px", textAlign: "center" }}>{p.beneficiaries?.total || "—"}</td>
-                                    <td style={{ padding: "7px 10px" }}><span style={{ background: sc.bg, color: sc.color, borderRadius: 20, padding: "1px 8px", fontSize: 10, fontWeight: 700 }}>{p.status}</span></td>
-                                  </tr>
-                                );
-                              })}
-                            </tbody>
-                            <tfoot>
-                              <tr style={{ background: k.color+"15", borderTop: `2px solid ${k.color}30` }}>
-                                <td colSpan={3} style={{ padding: "7px 10px", fontSize: 11, fontWeight: 800, color: k.color }}>Component Total</td>
-                                <td style={{ padding: "7px 10px", fontSize: 11, fontWeight: 800, color: "#16a34a" }}>{fmt(totalFundsK)}</td>
-                                <td style={{ padding: "7px 10px", textAlign: "center", fontSize: 11, fontWeight: 800, color: k.color }}>{relProjects.reduce((s, p) => s + Number(p.beneficiaries?.total||0), 0) || "—"}</td>
-                                <td style={{ padding: "7px 10px", fontSize: 11, color: "#6b7280" }}>{relProjects.filter(p => p.status === "Ongoing").length} Ongoing</td>
-                              </tr>
-                            </tfoot>
-                          </table>
+                          <div style={{ overflowX: "auto" }}>
+                            <table className="cest-table" style={{ width: "100%", borderCollapse: "collapse", fontSize: 11, background: "#f9fafb", borderRadius: 7, overflow: "hidden" }}>
+                              <thead>
+                                <tr style={{ background: k.color+"20", color: k.color }}>
+                                  {["Year","Municipality","Project","Amount","Beneficiaries","Status"].map(h => (
+                                    <th key={h} style={{ padding: "7px 10px", textAlign: h === "Amount" || h === "Beneficiaries" ? "right" : h === "Status" ? "center" : "left", fontWeight: 700, fontSize: 11 }}>{h}</th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {relProjects.map(p => {
+                                  const sc = statusColor(p.status);
+                                  return (
+                                    <tr key={p.id} style={{ borderTop: "1px solid #e5e7eb" }}>
+                                      <td style={{ padding: "7px 10px", fontWeight: 700, textAlign: "left" }}>{p.year}</td>
+                                      <td style={{ padding: "7px 10px", color: "#1e40af", fontWeight: 600, textAlign: "left" }}>{p.municipality}</td>
+                                      <td style={{ padding: "7px 10px", maxWidth: 200, textAlign: "left" }}>
+                                        <div style={{ fontSize: 11, fontWeight: 700, color: "#111827", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{p.project}</div>
+                                        <FileButton p={p} />
+                                      </td>
+                                      <td style={{ padding: "7px 10px", color: "#16a34a", fontWeight: 700, whiteSpace: "nowrap", textAlign: "right" }}>{fmt(p.amountFunded)}</td>
+                                      <td style={{ padding: "7px 10px", textAlign: "right" }}>{p.beneficiaries?.total || "—"}</td>
+                                      <td style={{ padding: "7px 10px", textAlign: "center" }}>
+                                        <span style={{ background: sc.bg, color: sc.color, borderRadius: 20, padding: "1px 8px", fontSize: 10, fontWeight: 700 }}>{p.status}</span>
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                              <tfoot>
+                                <tr style={{ background: k.color+"15", borderTop: `2px solid ${k.color}30` }}>
+                                  <td colSpan={3} style={{ padding: "7px 10px", fontSize: 11, fontWeight: 800, color: k.color, textAlign: "left" }}>Component Total</td>
+                                  <td style={{ padding: "7px 10px", fontSize: 11, fontWeight: 800, color: "#16a34a", textAlign: "right" }}>{fmt(totalFundsK)}</td>
+                                  <td style={{ padding: "7px 10px", textAlign: "right", fontSize: 11, fontWeight: 800, color: k.color }}>{relProjects.reduce((s, p) => s + Number(p.beneficiaries?.total||0), 0) || "—"}</td>
+                                  <td style={{ padding: "7px 10px", fontSize: 11, color: "#6b7280", textAlign: "center" }}>{relProjects.filter(p => p.status === "Ongoing").length} Ongoing</td>
+                                </tr>
+                              </tfoot>
+                            </table>
+                          </div>
                         </div>
                       )}
 
