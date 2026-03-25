@@ -1,16 +1,25 @@
 import { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Sidebar } from "./components/common/Sidebar";
 import { TopBar } from "./components/common/TopBar";
 import { Toast } from "./components/common/Toast";
 import { Dashboard } from "./components/pages/Dashboard";
+import { ProvincesPage } from "./components/pages/ProvincesPage";
+import { CitiesPage } from "./components/pages/CitiesPage";
+import { BarangaysPage } from "./components/pages/BarangaysPage";
+import { MonitoringPage } from "./components/pages/MonitoringPage";
+import { ArchivePage } from "./components/pages/ArchivePage";
+import { DataEntryPage } from "./components/pages/DataEntryPage";
+import { SettingsPage } from "./components/pages/SettingsPage";
 import { usePersistedState } from "./hooks/usePersistedState";
-import { useToast } from "./hooks/useToast";
-import { LS_KEYS, DEFAULT_SETTINGS } from "./constants";
+import { useToastNotification } from "./hooks/useToastNotification";
+import { LS_KEYS } from "./constants";
 import { INITIAL_PROJECTS, INITIAL_EQUIPMENT } from "./Utils";
 
-export default function App() {
-  const [projects] = usePersistedState(LS_KEYS.projects, INITIAL_PROJECTS);
-  const [equipment] = usePersistedState(LS_KEYS.equipment, INITIAL_EQUIPMENT);
+function AppContent() {
+  const [projects, setProjects] = usePersistedState(LS_KEYS.projects, INITIAL_PROJECTS);
+  const [equipment, setEquipment] = usePersistedState(LS_KEYS.equipment, INITIAL_EQUIPMENT);
+  const [archivedProjects, setArchivedProjects] = usePersistedState("cest_archived_projects", []);
   const [notifications, setNotifications] = usePersistedState(LS_KEYS.notifications, [
     {
       id: 1,
@@ -43,8 +52,9 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showNotifs, setShowNotifs] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [isCollapsed, setIsCollapsed] = usePersistedState("sidebar_collapsed", false);
 
-  const { toast } = useToast();
+  const { toasts, success, error, warning, info, removeToast } = useToastNotification();
 
   const uniqueComm = new Set(projects.map((p) => p.community)).size;
   const unreadCount = notifications.filter((n) => !n.read).length;
@@ -83,13 +93,49 @@ export default function App() {
     setNotifications(notifications.filter(n => n.id !== id));
   };
 
+  // Archive functions
+  const handleRestore = (projectId) => {
+    const projectToRestore = archivedProjects.find(p => p.id === projectId);
+    if (projectToRestore) {
+      // Remove from archive
+      setArchivedProjects(archivedProjects.filter(p => p.id !== projectId));
+      // Note: In a real app, you'd add back to projects here
+      // For now, just show a toast notification
+      console.log("Project restored:", projectToRestore);
+    }
+  };
+
+  const handlePermanentDelete = (projectId) => {
+    setArchivedProjects(archivedProjects.filter(p => p.id !== projectId));
+  };
+
+  // Data Entry functions
+  const handleAddProject = (projectData) => {
+    setProjects([...projects, projectData]);
+    success('Project added successfully!');
+  };
+
+  const handleAddEquipment = (equipmentData) => {
+    setEquipment([...equipment, equipmentData]);
+    success('Equipment added successfully!');
+  };
+
   return (
     <div className="flex h-screen overflow-hidden" style={{
       background: darkMode 
         ? 'linear-gradient(to bottom right, #020617, #0f172a, #020617)' 
         : 'linear-gradient(to bottom right, #f8fafc, #dbeafe, #e0e7ff)'
     }}>
-      {toast && <Toast message={toast.msg} color={toast.color} />}
+      {/* Toast Notifications */}
+      {toasts.map((toast) => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          duration={toast.duration}
+          onClose={() => removeToast(toast.id)}
+        />
+      ))}
 
       <Sidebar
         activePage={activePage}
@@ -97,74 +143,111 @@ export default function App() {
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         darkMode={darkMode}
+        isCollapsed={isCollapsed}
+        setIsCollapsed={setIsCollapsed}
       />
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <TopBar
           activePage={activePage}
-          projects={projects}
-          uniqueComm={uniqueComm}
           unreadCount={unreadCount}
-          showNotifs={showNotifs}
           setShowNotifs={setShowNotifs}
-          showSettings={showSettings}
           setShowSettings={setShowSettings}
           setSidebarOpen={setSidebarOpen}
           darkMode={darkMode}
           setDarkMode={setDarkMode}
+          projects={projects}
+          onNavigateToProject={(project) => {
+            setActivePage("dashboard");
+            console.log("Navigate to project:", project);
+          }}
         />
 
         <main className="flex-1 overflow-auto p-8 scrollbar-thin">
-          {activePage === "dashboard" && (
-            <Dashboard 
-              projects={projects} 
-              equipment={equipment} 
-              uniqueComm={uniqueComm}
+          {/* Settings Modal */}
+          {showSettings && (
+            <SettingsPage 
               darkMode={darkMode}
+              setDarkMode={setDarkMode}
+              onClose={() => setShowSettings(false)}
             />
           )}
-
-          {activePage !== "dashboard" && (
-            <div className="flex items-center justify-center h-full">
-              <div 
-                className="text-center p-12 rounded-3xl backdrop-blur-xl shadow-2xl max-w-md animate-fade-in"
-                style={{
-                  backgroundColor: darkMode ? 'rgba(15, 23, 42, 0.8)' : 'rgba(255, 255, 255, 0.8)',
-                  borderWidth: '1px',
-                  borderStyle: 'solid',
-                  borderColor: darkMode ? '#1e293b' : '#e2e8f0'
-                }}
-              >
-                <div className="w-24 h-24 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-glow">
-                  <span className="text-5xl">
-                    {activePage === "dataentry" && "✏️"}
-                    {activePage === "projects" && "📁"}
-                    {activePage === "trainings" && "🎓"}
-                    {activePage === "kpireports" && "📊"}
-                  </span>
-                </div>
-                <h2 className="text-3xl font-bold mb-3 gradient-text">
-                  {activePage === "dataentry" && "Data Entry"}
-                  {activePage === "projects" && "Projects"}
-                  {activePage === "trainings" && "Trainings"}
-                  {activePage === "kpireports" && "KPI Reports"}
-                </h2>
-                <p className="font-medium mb-4" style={{ color: darkMode ? '#94a3b8' : '#475569' }}>
-                  This feature is coming soon
-                </p>
-                <div 
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold"
-                  style={{
-                    backgroundColor: darkMode ? 'rgba(59, 130, 246, 0.3)' : '#dbeafe',
-                    color: darkMode ? '#60a5fa' : '#2563eb'
-                  }}
-                >
-                  <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
-                  In Development
-                </div>
-              </div>
-            </div>
-          )}
+          <Routes>
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route
+              path="/dashboard"
+              element={
+                activePage === "dashboard" ? (
+                  <Dashboard 
+                    projects={projects} 
+                    equipment={equipment} 
+                    uniqueComm={uniqueComm}
+                    darkMode={darkMode}
+                  />
+                ) : activePage === "analytics" ? (
+                  <ProvincesPage projects={projects} darkMode={darkMode} />
+                ) : activePage === "monitoring" ? (
+                  <MonitoringPage projects={projects} darkMode={darkMode} />
+                ) : activePage === "archive" ? (
+                  <ArchivePage 
+                    archivedProjects={archivedProjects}
+                    onRestore={handleRestore}
+                    onPermanentDelete={handlePermanentDelete}
+                    darkMode={darkMode}
+                  />
+                ) : activePage === "dataentry" ? (
+                  <DataEntryPage
+                    projects={projects}
+                    equipment={equipment}
+                    onAddProject={handleAddProject}
+                    onAddEquipment={handleAddEquipment}
+                    darkMode={darkMode}
+                  />
+                ) : (
+                  <PlaceholderPage activePage={activePage} darkMode={darkMode} />
+                )
+              }
+            />
+            <Route
+              path="/analytics"
+              element={<ProvincesPage projects={projects} darkMode={darkMode} />}
+            />
+            <Route
+              path="/analytics/provinces/:provinceId"
+              element={<CitiesPage projects={projects} darkMode={darkMode} />}
+            />
+            <Route
+              path="/analytics/provinces/:provinceId/cities/:cityName"
+              element={<BarangaysPage projects={projects} darkMode={darkMode} />}
+            />
+            <Route
+              path="/monitoring"
+              element={<MonitoringPage projects={projects} darkMode={darkMode} />}
+            />
+            <Route
+              path="/archive"
+              element={
+                <ArchivePage 
+                  archivedProjects={archivedProjects}
+                  onRestore={handleRestore}
+                  onPermanentDelete={handlePermanentDelete}
+                  darkMode={darkMode}
+                />
+              }
+            />
+            <Route
+              path="/dataentry"
+              element={
+                <DataEntryPage
+                  projects={projects}
+                  equipment={equipment}
+                  onAddProject={handleAddProject}
+                  onAddEquipment={handleAddEquipment}
+                  darkMode={darkMode}
+                />
+              }
+            />
+          </Routes>
         </main>
 
         {/* Notification Panel */}
@@ -259,5 +342,58 @@ export default function App() {
         )}
       </div>
     </div>
+  );
+}
+
+// Placeholder component for non-dashboard pages
+function PlaceholderPage({ activePage, darkMode }) {
+  return (
+    <div className="flex items-center justify-center h-full">
+      <div 
+        className="text-center p-12 rounded-3xl backdrop-blur-xl shadow-2xl max-w-md animate-fade-in"
+        style={{
+          backgroundColor: darkMode ? 'rgba(15, 23, 42, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+          borderWidth: '1px',
+          borderStyle: 'solid',
+          borderColor: darkMode ? '#1e293b' : '#e2e8f0'
+        }}
+      >
+        <div className="w-24 h-24 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-glow">
+          <span className="text-5xl">
+            {activePage === "dataentry" && "✏️"}
+            {activePage === "projects" && "📁"}
+            {activePage === "trainings" && "🎓"}
+            {activePage === "kpireports" && "📊"}
+          </span>
+        </div>
+        <h2 className="text-3xl font-bold mb-3 gradient-text">
+          {activePage === "dataentry" && "Data Entry"}
+          {activePage === "projects" && "Projects"}
+          {activePage === "trainings" && "Trainings"}
+          {activePage === "kpireports" && "KPI Reports"}
+        </h2>
+        <p className="font-medium mb-4" style={{ color: darkMode ? '#94a3b8' : '#475569' }}>
+          This feature is coming soon
+        </p>
+        <div 
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold"
+          style={{
+            backgroundColor: darkMode ? 'rgba(59, 130, 246, 0.3)' : '#dbeafe',
+            color: darkMode ? '#60a5fa' : '#2563eb'
+          }}
+        >
+          <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+          In Development
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
   );
 }
