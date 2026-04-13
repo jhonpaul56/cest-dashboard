@@ -1,4 +1,4 @@
-import { Menu, Sun, Moon, Bell, Settings, Search, X } from "lucide-react";
+import { Menu, Sun, Moon, Database, Settings, Search, X } from "lucide-react";
 import { useState } from "react";
 
 const NAV_LABELS = {
@@ -10,8 +10,8 @@ const NAV_LABELS = {
 
 export const TopBar = ({
   activePage,
-  unreadCount,
-  setShowNotifs,
+  auditLogCount = 0,
+  setShowAuditLog,
   setShowSettings,
   setSidebarOpen,
   darkMode,
@@ -122,16 +122,17 @@ export const TopBar = ({
               onClick={(e) => {
                 e.stopPropagation();
                 setShowSettings(false);
-                setShowNotifs((v) => !v);
+                setShowAuditLog((v) => !v);
                 setShowSearch(false);
               }}
               className="relative p-2.5 rounded-xl transition-all duration-200 hover:scale-110 group"
               style={buttonStyles}
+              title="Activity Log"
             >
-              <Bell className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-red-500 to-pink-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-lg animate-bounce-subtle">
-                  {unreadCount > 9 ? "9+" : unreadCount}
+              <Database className="w-5 h-5 group-hover:scale-110 transition-transform" />
+              {auditLogCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-lg">
+                  {auditLogCount > 99 ? "99+" : auditLogCount}
                 </span>
               )}
             </button>
@@ -139,7 +140,7 @@ export const TopBar = ({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                setShowNotifs(false);
+                setShowAuditLog(false);
                 setShowSettings((v) => !v);
                 setShowSearch(false);
               }}

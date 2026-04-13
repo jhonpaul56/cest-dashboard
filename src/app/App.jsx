@@ -4,6 +4,7 @@ import { Sidebar } from "../components/layout/Sidebar";
 import { StarbooksSidebar } from "../components/layout/StarbooksSidebar";
 import { TopBar } from "../components/layout/TopBar";
 import { Toast } from "../components/ui/Toast";
+import { AuditLog } from "../components/ui/AuditLog";
 import { LoadingScreen } from "../components/ui/LoadingScreen";
 import { ChatBot } from "../components/ui/ChatBot";
 import { Dashboard } from "../features/dashboard/Dashboard";
@@ -18,36 +19,10 @@ import { SettingsPage } from "../features/settings/SettingsPage";
 import { LoginPage } from "../features/auth/LoginPage";
 import { usePersistedState } from "../shared/hooks/usePersistedState";
 import { useToastNotification } from "../shared/hooks/useToastNotification";
+import { useAuditLog } from "../shared/hooks/useAuditLog";
+import { auditService, ENTITY_TYPES } from "../shared/services/auditService";
 import { LS_KEYS } from "../shared/constants";
 import { INITIAL_PROJECTS, INITIAL_EQUIPMENT } from "../shared/utils/Utils";
-
-// Default notifications
-const DEFAULT_NOTIFICATIONS = [
-  {
-    id: 1,
-    title: "New Project Added",
-    message: "A new CEST 2.0 project has been added in Gonzaga",
-    time: "5 minutes ago",
-    read: false,
-    type: "success"
-  },
-  {
-    id: 2,
-    title: "Budget Update",
-    message: "Total budget has reached ₱1.4M across all municipalities",
-    time: "1 hour ago",
-    read: false,
-    type: "info"
-  },
-  {
-    id: 3,
-    title: "Training Scheduled",
-    message: "Community training scheduled for next week in Peñablanca",
-    time: "3 hours ago",
-    read: true,
-    type: "warning"
-  }
-];
 
 // Auto-logout configuration
 const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes
@@ -60,17 +35,29 @@ function AppContent() {
   const [projects, setProjects] = usePersistedState(LS_KEYS.projects, INITIAL_PROJECTS);
   const [equipment, setEquipment] = usePersistedState(LS_KEYS.equipment, INITIAL_EQUIPMENT);
   const [archivedProjects, setArchivedProjects] = usePersistedState("cest_archived_projects", []);
-  const [notifications, setNotifications] = usePersistedState(LS_KEYS.notifications, DEFAULT_NOTIFICATIONS);
   const [darkMode, setDarkMode] = usePersistedState("darkMode", false);
 
   const [activePage, setActivePage] = useState("dashboard");
   const [activeSystem, setActiveSystem] = usePersistedState("active_system", "cest"); // "cest" or "starbooks"
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [showNotifs, setShowNotifs] = useState(false);
+  const [showAuditLog, setShowAuditLog] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [isCollapsed, setIsCollapsed] = usePersistedState("sidebar_collapsed", false);
 
   const { toasts, success, warning, removeToast } = useToastNotification();
+  const { logs } = useAuditLog();
+
+  // Add sample audit logs on first load
+  useEffect(() => {
+    const hasInitializedLogs = localStorage.getItem('cest_audit_initialized');
+    if (!hasInitializedLogs) {
+      // Add some sample logs
+      auditService.logCreate(ENTITY_TYPES.PROJECT, 'CEST 2.0 - Gonzaga', 'Municipality: Gonzaga, Budget: ₱150,000');
+      auditService.logUpload(ENTITY_TYPES.EQUIPMENT, 'Desktop Computer Set', 'Quantity: 5, Location: Gonzaga');
+      auditService.logUpdate(ENTITY_TYPES.PROJECT, 'SEL Project - Isabela', 'Status changed to Ongoing');
+      localStorage.setItem('cest_audit_initialized', 'true');
+    }
+  }, []);
 
   // Handle system switching
   const handleSwitchSystem = () => {
@@ -80,10 +67,12 @@ function AppContent() {
     if (newSystem === "starbooks") {
       setActivePage("starbooks");
       navigate("/starbooks");
+      auditService.logUpdate(ENTITY_TYPES.SYSTEM, 'System Switch', 'Switched to STARBOOKS system');
       success("Switched to STARBOOKS system");
     } else {
       setActivePage("dashboard");
       navigate("/dashboard");
+      auditService.logUpdate(ENTITY_TYPES.SYSTEM, 'System Switch', 'Switched to CEST system');
       success("Switched to CEST system");
     }
   };
@@ -118,7 +107,6 @@ function AppContent() {
   }, [isLoggedIn, navigate, setIsLoggedIn, warning]);
 
   const uniqueComm = new Set(projects.map((p) => p.community)).size;
-  const unreadCount = notifications.filter((n) => !n.read).length;
 
   // Apply dark mode class to html element
   useEffect(() => {
@@ -133,56 +121,57 @@ function AppContent() {
   // Close panels when clicking outside
   useEffect(() => {
     const handleClick = () => {
-      if (showNotifs || showSettings) {
-        setShowNotifs(false);
+      if (showAuditLog || showSettings) {
+        setShowAuditLog(false);
         setShowSettings(false);
       }
     };
     
-    if (showNotifs || showSettings) {
+    if (showAuditLog || showSettings) {
       setTimeout(() => {
         document.addEventListener('click', handleClick);
       }, 0);
       
       return () => document.removeEventListener('click', handleClick);
     }
-  }, [showNotifs, showSettings]);
-
-  const markAsRead = (id) => {
-    setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n));
-  };
-
-  const markAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, read: true })));
-  };
-
-  const deleteNotification = (id) => {
-    setNotifications(notifications.filter(n => n.id !== id));
-  };
+  }, [showAuditLog, showSettings]);
 
   // Archive functions
   const handleRestore = (projectId) => {
     const projectToRestore = archivedProjects.find(p => p.id === projectId);
     if (projectToRestore) {
-      // Remove from archive
       setArchivedProjects(archivedProjects.filter(p => p.id !== projectId));
-      // Note: In a real app, you'd add back to projects here
+      auditService.logRestore(ENTITY_TYPES.PROJECT, projectToRestore.project);
       success(`Project "${projectToRestore.project}" restored successfully!`);
     }
   };
 
   const handlePermanentDelete = (projectId) => {
-    setArchivedProjects(archivedProjects.filter(p => p.id !== projectId));
+    const projectToDelete = archivedProjects.find(p => p.id === projectId);
+    if (projectToDelete) {
+      setArchivedProjects(archivedProjects.filter(p => p.id !== projectId));
+      auditService.logDelete(ENTITY_TYPES.PROJECT, projectToDelete.project);
+    }
   };
 
   // Data Entry functions
   const handleAddProject = (projectData) => {
     setProjects([...projects, projectData]);
+    auditService.logCreate(
+      ENTITY_TYPES.PROJECT, 
+      projectData.project,
+      `Municipality: ${projectData.municipality}, Budget: ₱${projectData.amountFunded?.toLocaleString()}`
+    );
     success('Project added successfully!');
   };
 
   const handleAddEquipment = (equipmentData) => {
     setEquipment([...equipment, equipmentData]);
+    auditService.logCreate(
+      ENTITY_TYPES.EQUIPMENT,
+      equipmentData.name || equipmentData.type,
+      `Quantity: ${equipmentData.quantity}, Location: ${equipmentData.location}`
+    );
     success('Equipment added successfully!');
   };
 
@@ -247,8 +236,8 @@ function AppContent() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <TopBar
           activePage={activePage}
-          unreadCount={unreadCount}
-          setShowNotifs={setShowNotifs}
+          auditLogCount={logs.length}
+          setShowAuditLog={setShowAuditLog}
           setShowSettings={setShowSettings}
           setSidebarOpen={setSidebarOpen}
           darkMode={darkMode}
@@ -355,95 +344,13 @@ function AppContent() {
           </Routes>
         </main>
 
-        {/* Notification Panel */}
-        {showNotifs && (
-          <div 
-            className="absolute top-20 right-6 w-96 max-h-[600px] rounded-xl shadow-2xl overflow-hidden animate-fade-in z-50"
-            style={{
-              backgroundColor: darkMode ? '#0f172a' : '#ffffff',
-              border: `1px solid ${darkMode ? '#1e293b' : '#e5e7eb'}`
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="p-4 border-b" style={{ borderColor: darkMode ? '#1e293b' : '#e5e7eb' }}>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-semibold" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
-                  Notifications
-                </h3>
-                {unreadCount > 0 && (
-                  <button
-                    onClick={markAllAsRead}
-                    className="text-xs font-medium px-3 py-1 rounded-lg transition-colors"
-                    style={{
-                      color: '#004A98',
-                      background: darkMode ? 'rgba(0, 74, 152, 0.1)' : 'rgba(0, 74, 152, 0.08)'
-                    }}
-                  >
-                    Mark all as read
-                  </button>
-                )}
-              </div>
-              <p className="text-sm" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
-                You have {unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}
-              </p>
-            </div>
-
-            {/* Notifications List */}
-            <div className="overflow-y-auto max-h-[500px]">
-              {notifications.length === 0 ? (
-                <div className="p-8 text-center">
-                  <p className="text-sm" style={{ color: darkMode ? '#64748b' : '#94a3b8' }}>
-                    No notifications
-                  </p>
-                </div>
-              ) : (
-                notifications.map((notif) => (
-                  <div
-                    key={notif.id}
-                    className="p-4 border-b transition-colors cursor-pointer"
-                    style={{
-                      borderColor: darkMode ? '#1e293b' : '#e5e7eb',
-                      backgroundColor: notif.read ? 'transparent' : (darkMode ? 'rgba(0, 74, 152, 0.05)' : 'rgba(0, 74, 152, 0.03)')
-                    }}
-                    onClick={() => markAsRead(notif.id)}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div 
-                        className="w-2 h-2 rounded-full mt-2 flex-shrink-0"
-                        style={{
-                          backgroundColor: notif.read ? (darkMode ? '#334155' : '#cbd5e1') : '#004A98'
-                        }}
-                      ></div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <h4 className="text-sm font-semibold" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
-                            {notif.title}
-                          </h4>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              deleteNotification(notif.id);
-                            }}
-                            className="text-xs px-2 py-1 rounded hover:bg-red-500/10 transition-colors"
-                            style={{ color: '#ef4444' }}
-                          >
-                            ×
-                          </button>
-                        </div>
-                        <p className="text-sm mb-2" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
-                          {notif.message}
-                        </p>
-                        <p className="text-xs" style={{ color: darkMode ? '#64748b' : '#94a3b8' }}>
-                          {notif.time}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
+        {/* Audit Log Panel */}
+        {showAuditLog && (
+          <AuditLog 
+            logs={logs}
+            onClose={() => setShowAuditLog(false)}
+            darkMode={darkMode}
+          />
         )}
       </div>
 
