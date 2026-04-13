@@ -177,15 +177,22 @@ export const ArchivePage = ({ archivedProjects, onRestore, onPermanentDelete, da
       {showDeleteConfirm && (
         <>
           <div 
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 animate-backdrop-fade-in"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+            style={{
+              animation: 'backdropFadeIn 0.2s ease-out forwards'
+            }}
             onClick={() => setShowDeleteConfirm(null)}
           />
           <div 
-            className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md rounded-2xl shadow-2xl z-50 animate-modal-bounce-in"
+            className="fixed w-full max-w-md rounded-2xl shadow-2xl z-[51]"
             style={{
               background: darkMode ? '#0f172a' : '#ffffff',
               border: `1px solid ${darkMode ? '#1e293b' : '#e5e7eb'}`,
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              animation: 'modalAppear 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards'
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -234,6 +241,24 @@ export const ArchivePage = ({ archivedProjects, onRestore, onPermanentDelete, da
           </div>
         </>
       )}
+
+      <style>{`
+        @keyframes backdropFadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        
+        @keyframes modalAppear {
+          0% {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.9);
+          }
+          100% {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+          }
+        }
+      `}</style>
     </div>
   );
 };

@@ -188,13 +188,19 @@ export const AddProjectEquipmentModal = ({ onClose, onSaveProject, onSaveEquipme
     <>
       <div 
         className="fixed inset-0 bg-black/60 z-[9999]"
+        style={{
+          animation: 'backdropFadeIn 0.2s ease-out forwards'
+        }}
         onClick={onClose}
       />
       <div 
-        className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-2xl shadow-2xl z-[10000]"
+        className="fixed w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-2xl shadow-2xl z-[10000]"
         style={{
           ...modalStyle,
-          animation: 'modalFadeIn 0.3s ease-out'
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          animation: 'modalAppear 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards'
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -642,6 +648,24 @@ export const AddProjectEquipmentModal = ({ onClose, onSaveProject, onSaveEquipme
           </div>
         </div>
       </div>
+
+      <style>{`
+        @keyframes backdropFadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        
+        @keyframes modalAppear {
+          0% {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.9);
+          }
+          100% {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+          }
+        }
+      `}</style>
     </>
   );
 };

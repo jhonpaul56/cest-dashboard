@@ -325,15 +325,27 @@ export const DataEntryPage = ({ projects, equipment, onAddProject, onAddEquipmen
 
       {/* Detail Modal */}
       {showDetailModal && selectedItem && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[9999] p-4">
+        <>
           <div 
-            className="w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden rounded-2xl"
+            className="fixed inset-0 bg-black/60 z-[9999]"
+            style={{
+              animation: 'backdropFadeIn 0.2s ease-out forwards'
+            }}
+            onClick={() => setShowDetailModal(false)}
+          />
+          <div 
+            className="fixed w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden rounded-2xl"
             style={{
               background: darkMode ? '#1e293b' : '#ffffff',
               border: `1px solid ${darkMode ? '#334155' : '#e5e7eb'}`,
               boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
-              animation: 'modalFadeIn 0.3s ease-out'
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 10000,
+              animation: 'modalAppear 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards'
             }}
+            onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
             <div 
@@ -764,7 +776,25 @@ export const DataEntryPage = ({ projects, equipment, onAddProject, onAddEquipmen
               </div>
             </div>
           </div>
-        </div>
+
+          <style>{`
+            @keyframes backdropFadeIn {
+              from { opacity: 0; }
+              to { opacity: 1; }
+            }
+            
+            @keyframes modalAppear {
+              0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.9);
+              }
+              100% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+              }
+            }
+          `}</style>
+        </>
       )}
     </div>
   );

@@ -1,5 +1,5 @@
 import { Menu, Sun, Moon, Database, Settings, Search, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const NAV_LABELS = {
   dashboard: "Dashboard",
@@ -55,7 +55,7 @@ export const TopBar = ({
 
   const handleSearchClick = () => {
     setShowSearch(true);
-    setShowNotifs(false);
+    setShowAuditLog(false);
     setShowSettings(false);
   };
 
@@ -63,6 +63,20 @@ export const TopBar = ({
     setShowSearch(false);
     setSearchQuery("");
   };
+
+  // ESC key to close search modal
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && showSearch) {
+        handleCloseSearch();
+      }
+    };
+
+    if (showSearch) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [showSearch]);
 
   return (
     <>
@@ -156,11 +170,21 @@ export const TopBar = ({
       {showSearch && (
         <>
           <div 
-            className="fixed inset-0 bg-black/70 backdrop-blur-md z-[9995] animate-backdrop-fade-in"
+            className="fixed inset-0 bg-black/70 backdrop-blur-md z-[9995]"
+            style={{
+              animation: 'backdropFadeIn 0.2s ease-out forwards'
+            }}
             onClick={handleCloseSearch}
           />
           <div 
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9996] animate-modal-fade-in px-4 w-full max-w-3xl"
+            className="fixed px-4 w-full max-w-3xl"
+            style={{
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 9996,
+              animation: 'modalAppear 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards'
+            }}
             onClick={(e) => e.stopPropagation()}
           >
             <div 
@@ -398,28 +422,24 @@ export const TopBar = ({
           </div>
 
           <style>{`
-            @keyframes fade-in {
-              from { opacity: 0; }
-              to { opacity: 1; }
+            @keyframes backdropFadeIn {
+              from { 
+                opacity: 0; 
+              }
+              to { 
+                opacity: 1; 
+              }
             }
             
-            @keyframes scale-in {
-              from {
+            @keyframes modalAppear {
+              0% {
                 opacity: 0;
                 transform: translate(-50%, -50%) scale(0.9);
               }
-              to {
+              100% {
                 opacity: 1;
                 transform: translate(-50%, -50%) scale(1);
               }
-            }
-            
-            .animate-fade-in {
-              animation: fade-in 0.2s ease-out;
-            }
-            
-            .animate-scale-in {
-              animation: scale-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             }
           `}</style>
         </>

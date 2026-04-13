@@ -472,11 +472,20 @@ export const Sidebar = ({
       {showLogoutModal && (
         <>
           <div 
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] animate-backdrop-fade-in"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
+            style={{
+              animation: 'backdropFadeIn 0.2s ease-out forwards'
+            }}
             onClick={() => setShowLogoutModal(false)}
           />
           <div 
-            className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md z-[60] px-4 animate-modal-fade-in"
+            className="fixed w-full max-w-md z-[61] px-4"
+            style={{
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              animation: 'modalAppear 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards'
+            }}
             onClick={(e) => e.stopPropagation()}
           >
             <div 
@@ -577,11 +586,20 @@ export const Sidebar = ({
       {showSwitchModal && (
         <>
           <div 
-            className="fixed inset-0 bg-black/70 backdrop-blur-md z-[60] animate-backdrop-fade-in"
+            className="fixed inset-0 bg-black/70 backdrop-blur-md z-[60]"
+            style={{
+              animation: 'backdropFadeIn 0.2s ease-out forwards'
+            }}
             onClick={() => setShowSwitchModal(false)}
           />
           <div 
-            className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-lg z-[60] px-4 animate-modal-bounce-in"
+            className="fixed w-full max-w-lg z-[61] px-4"
+            style={{
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              animation: 'modalAppear 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards'
+            }}
             onClick={(e) => e.stopPropagation()}
           >
             <div 
@@ -839,6 +857,22 @@ export const Sidebar = ({
               }
               50% {
                 opacity: 0.5;
+              }
+            }
+
+            @keyframes backdropFadeIn {
+              from { opacity: 0; }
+              to { opacity: 1; }
+            }
+            
+            @keyframes modalAppear {
+              0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.9);
+              }
+              100% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
               }
             }
           `}</style>
