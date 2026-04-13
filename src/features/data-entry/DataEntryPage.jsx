@@ -20,25 +20,6 @@ export const DataEntryPage = ({ projects, equipment, onAddProject, onAddEquipmen
   const uniqueMunicipalities = new Set([...projects.map(p => p.municipality), ...equipment.map(e => e.municipality)]).size;
   const totalBudget = projects.reduce((sum, p) => sum + (parseFloat(p.amountFunded) || 0), 0);
 
-  // Get municipality breakdown
-  const municipalityStats = {};
-  [...projects, ...equipment].forEach(item => {
-    const muni = item.municipality;
-    if (!municipalityStats[muni]) {
-      municipalityStats[muni] = { projects: 0, equipment: 0, budget: 0 };
-    }
-    if (item.project) {
-      municipalityStats[muni].projects++;
-      municipalityStats[muni].budget += parseFloat(item.amountFunded) || 0;
-    } else {
-      municipalityStats[muni].equipment++;
-    }
-  });
-
-  const topMunicipalities = Object.entries(municipalityStats)
-    .sort((a, b) => (b[1].projects + b[1].equipment) - (a[1].projects + a[1].equipment))
-    .slice(0, 5);
-
   return (
     <div className="max-w-[1800px] mx-auto space-y-6">
       {/* Header with Gradient */}
@@ -115,53 +96,6 @@ export const DataEntryPage = ({ projects, equipment, onAddProject, onAddEquipmen
               color="rgba(255, 255, 255, 0.95)"
               textColor="#ef4444"
             />
-          </div>
-        </div>
-      </div>
-
-      {/* Municipality Details Section */}
-      <div className="rounded-xl overflow-hidden" style={{
-        background: darkMode ? '#0f172a' : '#ffffff',
-        border: `1px solid ${darkMode ? '#1e293b' : '#e5e7eb'}`,
-        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-      }}>
-        <div className="p-6 border-b" style={{ borderColor: darkMode ? '#1e293b' : '#e5e7eb' }}>
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg" style={{ background: 'rgba(139, 92, 246, 0.1)' }}>
-              <MapPin className="w-5 h-5" style={{ color: '#8b5cf6' }} />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
-                Top Municipalities
-              </h2>
-              <p className="text-xs" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
-                Most active municipalities by project and equipment count
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="p-6">
-          <div className="space-y-3">
-            {topMunicipalities.length > 0 ? (
-              topMunicipalities.map(([muni, stats], index) => (
-                <MunicipalityCard
-                  key={muni}
-                  rank={index + 1}
-                  municipality={muni}
-                  projects={stats.projects}
-                  equipment={stats.equipment}
-                  budget={stats.budget}
-                  darkMode={darkMode}
-                />
-              ))
-            ) : (
-              <div className="text-center py-8">
-                <MapPin className="w-12 h-12 mx-auto mb-3" style={{ color: darkMode ? '#475569' : '#cbd5e1' }} />
-                <p className="text-sm" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
-                  No municipality data available yet
-                </p>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -667,6 +601,75 @@ export const DataEntryPage = ({ projects, equipment, onAddProject, onAddEquipmen
                   </div>
                 )}
 
+                {/* Related Equipment - Only show for projects */}
+                {selectedItem.project && (() => {
+                  const relatedEquipment = equipment.filter(eq => 
+                    eq.municipality === selectedItem.municipality && 
+                    eq.year === selectedItem.year
+                  );
+                  
+                  if (relatedEquipment.length > 0) {
+                    return (
+                      <div>
+                        <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
+                          <div className="p-2 rounded-lg" style={{ background: 'rgba(16, 185, 129, 0.1)' }}>
+                            <Package className="w-5 h-5" style={{ color: '#10b981' }} />
+                          </div>
+                          Related Equipment ({relatedEquipment.length})
+                        </h3>
+                        
+                        <div 
+                          className="p-4 rounded-xl" 
+                          style={{ 
+                            background: darkMode ? '#334155' : '#f8fafc',
+                            border: `1px solid ${darkMode ? '#475569' : '#e2e8f0'}`
+                          }}
+                        >
+                          <div className="space-y-3">
+                            {relatedEquipment.map((eq) => (
+                              <div
+                                key={eq.id}
+                                className="p-3 rounded-lg border"
+                                style={{
+                                  background: darkMode ? '#1e293b' : '#ffffff',
+                                  borderColor: darkMode ? '#334155' : '#e2e8f0'
+                                }}
+                              >
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className="flex-1">
+                                    <h4 className="text-sm font-bold mb-1" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
+                                      {eq.equipment}
+                                    </h4>
+                                    <div className="flex items-center gap-3 text-xs" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
+                                      <div className="flex items-center gap-1">
+                                        <Package className="w-3 h-3" />
+                                        <span className="font-semibold">{eq.units} units</span>
+                                      </div>
+                                      <span>•</span>
+                                      <span className="font-semibold">{eq.year}</span>
+                                    </div>
+                                  </div>
+                                  <span 
+                                    className="text-xs font-bold px-2 py-1 rounded-lg"
+                                    style={{
+                                      backgroundColor: `${COMP_COLORS[eq.component]}25`,
+                                      color: COMP_COLORS[eq.component],
+                                      border: `1px solid ${COMP_COLORS[eq.component]}40`
+                                    }}
+                                  >
+                                    {eq.component?.toUpperCase()}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+
                 {/* Additional Details */}
                 <div>
                   <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
@@ -784,85 +787,3 @@ const StatCard = ({ icon: Icon, label, value, color, textColor }) => (
     </div>
   </div>
 );
-
-
-// Municipality Card Component
-const MunicipalityCard = ({ rank, municipality, projects, equipment, budget, darkMode }) => {
-  const total = projects + equipment;
-  const maxTotal = 20; // For progress bar calculation
-  const percentage = Math.min((total / maxTotal) * 100, 100);
-
-  return (
-    <div 
-      className="p-4 rounded-xl border transition-all duration-200 hover:shadow-lg"
-      style={{
-        background: darkMode ? '#1e293b' : '#f8fafc',
-        borderColor: darkMode ? '#334155' : '#e2e8f0'
-      }}
-    >
-      <div className="flex items-center gap-4">
-        {/* Rank Badge */}
-        <div 
-          className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg flex-shrink-0"
-          style={{
-            background: rank === 1 ? 'linear-gradient(135deg, #fbbf24, #f59e0b)' :
-                       rank === 2 ? 'linear-gradient(135deg, #94a3b8, #64748b)' :
-                       rank === 3 ? 'linear-gradient(135deg, #fb923c, #ea580c)' :
-                       darkMode ? '#334155' : '#e2e8f0',
-            color: rank <= 3 ? '#ffffff' : (darkMode ? '#94a3b8' : '#64748b')
-          }}
-        >
-          {rank}
-        </div>
-
-        {/* Municipality Info */}
-        <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-bold mb-1" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
-            {municipality}
-          </h3>
-          <div className="flex items-center gap-4 text-xs mb-2" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
-            <div className="flex items-center gap-1">
-              <FileText className="w-3 h-3" style={{ color: '#004A98' }} />
-              <span className="font-semibold">{projects}</span> projects
-            </div>
-            <div className="flex items-center gap-1">
-              <Package className="w-3 h-3" style={{ color: '#10b981' }} />
-              <span className="font-semibold">{equipment}</span> equipment
-            </div>
-            {budget > 0 && (
-              <div className="flex items-center gap-1">
-                <TrendingUp className="w-3 h-3" style={{ color: '#f59e0b' }} />
-                <span className="font-semibold">₱{(budget / 1000000).toFixed(2)}M</span>
-              </div>
-            )}
-          </div>
-          {/* Progress Bar */}
-          <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: darkMode ? '#0f172a' : '#e2e8f0' }}>
-            <div 
-              className="h-full rounded-full transition-all duration-500"
-              style={{
-                width: `${percentage}%`,
-                background: 'linear-gradient(90deg, #004A98, #10b981)'
-              }}
-            ></div>
-          </div>
-        </div>
-
-        {/* Total Badge */}
-        <div 
-          className="px-4 py-2 rounded-lg text-center flex-shrink-0"
-          style={{
-            background: darkMode ? '#334155' : '#f1f5f9'
-          }}
-        >
-          <div className="text-xl font-bold" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
-            {total}
-          </div>
-          <div className="text-[10px] font-medium" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
-            TOTAL
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};

@@ -15,6 +15,10 @@ const QUICK_ACTIONS = [
   { id: 6, text: "What can you help me with?", key: "help" },
 ];
 
+const TYPING_SPEED = 30; // milliseconds per character
+const PROGRESS_INTERVAL = 50; // milliseconds
+const STAGE_INTERVAL = 1000; // milliseconds
+
 export const ChatBot = ({ darkMode, onNavigate, projects = [], equipment = [] }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
@@ -68,7 +72,7 @@ What can I help you with today?`,
         setIsTyping(false);
         callback();
       }
-    }, 30); // Typing speed: 30ms per character
+    }, TYPING_SPEED);
   };
 
   useEffect(() => {
@@ -217,8 +221,6 @@ When users ask about specific projects, budgets, locations, or any data, provide
     }
 
     try {
-      console.log("Calling OpenAI API...");
-      
       // Build detailed data context
       const dataContext = buildDetailedDataContext();
       
@@ -314,7 +316,6 @@ Remember: You're a helpful, conversational guide focused on CEST 2.0. Be situati
         { role: "assistant", content: aiResponse }
       ].slice(-10)); // Keep last 10 messages for context
       
-      console.log("AI Response received");
       return aiResponse;
     } catch (error) {
       console.error("AI Error:", error);
@@ -611,7 +612,7 @@ Remember: You're a helpful, conversational guide focused on CEST 2.0. Be situati
       {/* Chat Window */}
       {isOpen && (
         <div 
-          className="fixed bottom-24 right-6 w-[420px] h-[650px] rounded-3xl flex flex-col z-50 animate-scale-in overflow-hidden"
+          className="fixed bottom-24 right-6 w-[420px] h-[650px] rounded-3xl flex flex-col z-50 animate-modal-fade-in overflow-hidden"
           style={chatWindowStyle}
         >
           {/* Header */}

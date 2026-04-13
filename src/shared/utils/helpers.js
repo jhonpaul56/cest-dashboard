@@ -1,6 +1,84 @@
 // Currency formatter
 export const fmt = (v) => (v ? `₱${Number(v).toLocaleString("en-PH")}` : "₱0");
 
+// Short currency formatter for charts
+export const formatCurrencyShort = (value) => {
+  if (value >= 1_000_000) return `₱${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 1_000) return `₱${(value / 1_000).toFixed(0)}k`;
+  return `₱${value}`;
+};
+
+// Status color helper
+export const getStatusColor = (status, darkMode = false) => {
+  const colors = {
+    Ongoing: darkMode 
+      ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" 
+      : "text-emerald-700 bg-emerald-50 border-emerald-200",
+    Liquidated: darkMode 
+      ? "text-amber-400 bg-amber-500/10 border-amber-500/20" 
+      : "text-amber-700 bg-amber-50 border-amber-200",
+    Finished: darkMode 
+      ? "text-blue-400 bg-blue-500/10 border-blue-500/20" 
+      : "text-blue-700 bg-blue-50 border-blue-200"
+  };
+  return colors[status] || colors.Finished;
+};
+
+// Card style helper - Enhanced with glassmorphism
+export const getCardStyle = (darkMode = false) => ({
+  background: darkMode 
+    ? 'linear-gradient(145deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%)'
+    : 'linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%)',
+  backdropFilter: 'blur(20px) saturate(180%)',
+  WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+  border: `1px solid ${darkMode ? 'rgba(51, 65, 85, 0.5)' : 'rgba(226, 232, 240, 0.8)'}`,
+  boxShadow: darkMode 
+    ? '0 8px 32px rgba(0, 0, 0, 0.4), 0 1px 0 rgba(255, 255, 255, 0.05) inset' 
+    : '0 8px 32px rgba(0, 74, 152, 0.08), 0 1px 0 rgba(255, 255, 255, 0.8) inset',
+});
+
+// Input style helper - Enhanced with better focus states
+export const getInputStyle = (darkMode = false, isFocused = false) => ({
+  background: darkMode ? 'rgba(30, 41, 59, 0.6)' : 'rgba(248, 250, 252, 0.8)',
+  color: darkMode ? '#f8fafc' : '#0f172a',
+  border: `2px solid ${isFocused ? '#004A98' : (darkMode ? 'rgba(51, 65, 85, 0.6)' : 'rgba(226, 232, 240, 0.8)')}`,
+  boxShadow: isFocused 
+    ? '0 0 0 4px rgba(0, 74, 152, 0.1), 0 4px 12px rgba(0, 74, 152, 0.15)' 
+    : 'none',
+  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+});
+
+// Button style helper - New utility
+export const getButtonStyle = (variant = 'primary', darkMode = false) => {
+  const variants = {
+    primary: {
+      background: 'linear-gradient(135deg, #004A98 0%, #0066CC 100%)',
+      color: '#ffffff',
+      boxShadow: '0 4px 16px rgba(0, 74, 152, 0.3)',
+      border: 'none'
+    },
+    secondary: {
+      background: darkMode ? 'rgba(30, 41, 59, 0.6)' : 'rgba(241, 245, 249, 0.8)',
+      color: darkMode ? '#f8fafc' : '#0f172a',
+      boxShadow: 'none',
+      border: `1px solid ${darkMode ? 'rgba(51, 65, 85, 0.6)' : 'rgba(226, 232, 240, 0.8)'}`
+    },
+    danger: {
+      background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
+      color: '#ffffff',
+      boxShadow: '0 4px 16px rgba(220, 38, 38, 0.3)',
+      border: 'none'
+    },
+    success: {
+      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+      color: '#ffffff',
+      boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)',
+      border: 'none'
+    }
+  };
+  return variants[variant] || variants.primary;
+};
+
 // Open uploaded file in new tab or trigger download
 export function openUploadedFile(fileData, fileName) {
   if (!fileData) return;

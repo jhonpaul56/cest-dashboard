@@ -6,7 +6,6 @@ const NAV_LABELS = {
   dataentry: "Data Entry",
   projects: "Projects",
   trainings: "Trainings",
-  kpireports: "KPI Reports",
 };
 
 export const TopBar = ({
@@ -156,11 +155,11 @@ export const TopBar = ({
       {showSearch && (
         <>
           <div 
-            className="fixed inset-0 bg-black/70 backdrop-blur-md z-[9995] animate-fade-in"
+            className="fixed inset-0 bg-black/70 backdrop-blur-md z-[9995] animate-backdrop-fade-in"
             onClick={handleCloseSearch}
           />
           <div 
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9996] animate-scale-in px-4 w-full max-w-3xl"
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9996] animate-modal-fade-in px-4 w-full max-w-3xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div 

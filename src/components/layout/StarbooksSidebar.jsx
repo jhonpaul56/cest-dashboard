@@ -1,42 +1,25 @@
 import { 
-  LayoutDashboard, 
-  FileText, 
-  GraduationCap, 
-  BarChart3, 
-  LogOut, 
-  Activity, 
-  Archive, 
-  ChevronLeft,
-  AlertTriangle,
   BookOpen,
   Package,
-  MapPin,
   Users,
-  Settings
+  MapPin,
+  Settings,
+  LogOut,
+  ChevronLeft,
+  AlertTriangle,
+  BarChart3,
+  FileText,
+  LayoutDashboard
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { COMPONENTS } from "../../shared/constants";
 
-const NAV_ITEMS = [
-  { id: "dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { id: "analytics", icon: BarChart3, label: "Analytics" },
-  { id: "monitoring", icon: Activity, label: "Monitoring" },
-  { id: "dataentry", icon: FileText, label: "Data Entry" },
-  { id: "trainings", icon: GraduationCap, label: "Trainings" },
-  { id: "archive", icon: Archive, label: "Archive" },
+const STARBOOKS_NAV_ITEMS = [
+  { id: "starbooks", icon: Package, label: "Inventory" },
+  { id: "starbooks-docs", icon: FileText, label: "Documentation" },
 ];
 
-const ROUTES = {
-  dashboard: "/dashboard",
-  analytics: "/analytics",
-  monitoring: "/monitoring",
-  archive: "/archive",
-  dataentry: "/dataentry",
-  starbooks: "/starbooks",
-};
-
-export const Sidebar = ({ 
+export const StarbooksSidebar = ({ 
   activePage, 
   setActivePage, 
   sidebarOpen, 
@@ -54,11 +37,8 @@ export const Sidebar = ({
   const handleNavigation = (itemId) => {
     setActivePage(itemId);
     setSidebarOpen(false);
-    
-    const route = ROUTES[itemId];
-    if (route) {
-      navigate(route);
-    }
+    // Stay on STARBOOKS page, just update the active menu item
+    // The StarbooksPage component can handle different sections based on activePage
   };
 
   const handleLogout = () => {
@@ -106,10 +86,10 @@ export const Sidebar = ({
   };
 
   const logoStyles = {
-    background: 'linear-gradient(135deg, #004A98 0%, #0066CC 100%)',
+    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
     boxShadow: darkMode 
-      ? '0 4px 12px rgba(0, 74, 152, 0.3)' 
-      : '0 4px 12px rgba(0, 74, 152, 0.2)'
+      ? '0 4px 12px rgba(16, 185, 129, 0.3)' 
+      : '0 4px 12px rgba(16, 185, 129, 0.2)'
   };
 
   const handleToggle = () => setIsCollapsed(!isCollapsed);
@@ -150,9 +130,9 @@ export const Sidebar = ({
                 style={{
                   background: '#ffffff',
                   boxShadow: darkMode 
-                    ? '0 8px 24px rgba(0, 74, 152, 0.3)' 
-                    : '0 8px 24px rgba(0, 74, 152, 0.2)',
-                  border: `2px solid ${darkMode ? 'rgba(0, 74, 152, 0.2)' : 'rgba(0, 74, 152, 0.15)'}`
+                    ? '0 8px 24px rgba(16, 185, 129, 0.3)' 
+                    : '0 8px 24px rgba(16, 185, 129, 0.2)',
+                  border: `2px solid ${darkMode ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.15)'}`
                 }}
               >
                 <img 
@@ -179,6 +159,7 @@ export const Sidebar = ({
           </div>
         )}
 
+        {/* Header */}
         <button
           onClick={handleToggle}
           className={`w-full border-b transition-all duration-200 group cursor-pointer ${
@@ -193,16 +174,13 @@ export const Sidebar = ({
             <div className="flex items-center gap-3">
               <div className="relative flex-shrink-0">
                 <div 
-                  className="w-11 h-11 rounded-xl flex items-center justify-center transition-transform duration-200 group-hover:scale-105 p-2" 
-                  style={{
-                    ...logoStyles,
-                    background: '#ffffff'
-                  }}
+                  className="w-11 h-11 rounded-xl flex items-center justify-center transition-transform duration-200 group-hover:scale-105 overflow-hidden" 
+                  style={logoStyles}
                 >
                   <img 
-                    src="/src/Cest Logo.png" 
-                    alt="DOST Logo" 
-                    className="w-full h-full object-contain" 
+                    src="/src/starbooks logo.png" 
+                    alt="STARBOOKS Logo" 
+                    className="w-full h-full object-cover" 
                   />
                 </div>
               </div>
@@ -211,13 +189,13 @@ export const Sidebar = ({
                   className="text-base font-bold tracking-tight transition-colors duration-200" 
                   style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}
                 >
-                  CEST 2.0
+                  STARBOOKS
                 </h1>
                 <p 
                   className="text-[11px] font-medium transition-colors duration-200" 
                   style={{ color: '#64748b' }}
                 >
-                  DOST Dashboard
+                  Digital Library System
                 </p>
               </div>
               <div className="flex-shrink-0 opacity-40 group-hover:opacity-100 transition-opacity duration-200">
@@ -230,34 +208,32 @@ export const Sidebar = ({
           ) : (
             <div className="flex justify-center">
               <div 
-                className="w-11 h-11 rounded-xl flex items-center justify-center transition-transform duration-200 group-hover:scale-105 p-2" 
-                style={{
-                  ...logoStyles,
-                  background: '#ffffff'
-                }}
+                className="w-11 h-11 rounded-xl flex items-center justify-center transition-transform duration-200 group-hover:scale-105 overflow-hidden" 
+                style={logoStyles}
               >
                 <img 
-                  src="/src/Cest Logo.png" 
-                  alt="DOST Logo" 
-                  className="w-full h-full object-contain" 
+                  src="/src/starbooks logo.png" 
+                  alt="STARBOOKS Logo" 
+                  className="w-full h-full object-cover" 
                 />
               </div>
             </div>
           )}
         </button>
 
+        {/* Navigation */}
         <nav className={`flex-1 overflow-y-auto scrollbar-thin ${isCollapsed ? 'px-3 py-4' : 'px-4 py-4'}`}>
           <div className="space-y-1">
-            {NAV_ITEMS.map((item) => {
+            {STARBOOKS_NAV_ITEMS.map((item) => {
               const Icon = item.icon;
               const isActive = activePage === item.id;
               
               const buttonStyles = {
                 background: isActive 
-                  ? 'linear-gradient(135deg, #004A98 0%, #0066CC 100%)'
+                  ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
                   : 'transparent',
                 boxShadow: isActive 
-                  ? (darkMode ? '0 2px 8px rgba(0, 74, 152, 0.4), inset 0 1px 0 rgba(255,255,255,0.1)' : '0 2px 8px rgba(0, 74, 152, 0.3)')
+                  ? (darkMode ? '0 2px 8px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255,255,255,0.1)' : '0 2px 8px rgba(16, 185, 129, 0.3)')
                   : 'none'
               };
 
@@ -272,11 +248,6 @@ export const Sidebar = ({
               };
 
               const labelColor = isActive ? '#ffffff' : (darkMode ? '#cbd5e1' : '#334155');
-
-              const badgeStyles = {
-                background: isActive ? 'rgba(255, 255, 255, 0.25)' : '#004A98',
-                color: '#ffffff'
-              };
 
               const handleHover = (e, isHovering) => {
                 if (!isActive) {
@@ -318,14 +289,12 @@ export const Sidebar = ({
                     </div>
                     
                     {!isCollapsed && (
-                      <>
-                        <span 
-                          className="flex-1 text-left text-[13px] font-semibold tracking-wide"
-                          style={{ color: labelColor }}
-                        >
-                          {item.label}
-                        </span>
-                      </>
+                      <span 
+                        className="flex-1 text-left text-[13px] font-semibold tracking-wide"
+                        style={{ color: labelColor }}
+                      >
+                        {item.label}
+                      </span>
                     )}
                   </div>
                 </button>
@@ -334,6 +303,7 @@ export const Sidebar = ({
           </div>
         </nav>
 
+        {/* Logout Button */}
         <div 
           className={`border-t ${isCollapsed ? 'px-3 py-4' : 'px-4 py-4'} space-y-3`}
           style={{
@@ -347,24 +317,24 @@ export const Sidebar = ({
               className="w-full px-4 py-3 rounded-xl transition-all duration-300 group relative overflow-hidden"
               style={{
                 background: darkMode 
-                  ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.15) 100%)'
-                  : 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%)',
-                border: `2px solid ${darkMode ? 'rgba(16, 185, 129, 0.3)' : 'rgba(16, 185, 129, 0.25)'}`,
-                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.15)'
+                  ? 'linear-gradient(135deg, rgba(0, 74, 152, 0.15) 0%, rgba(0, 102, 204, 0.15) 100%)'
+                  : 'linear-gradient(135deg, rgba(0, 74, 152, 0.1) 0%, rgba(0, 102, 204, 0.1) 100%)',
+                border: `2px solid ${darkMode ? 'rgba(0, 74, 152, 0.3)' : 'rgba(0, 74, 152, 0.25)'}`,
+                boxShadow: '0 4px 12px rgba(0, 74, 152, 0.15)'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = darkMode 
-                  ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(5, 150, 105, 0.25) 100%)'
-                  : 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.15) 100%)';
+                  ? 'linear-gradient(135deg, rgba(0, 74, 152, 0.25) 0%, rgba(0, 102, 204, 0.25) 100%)'
+                  : 'linear-gradient(135deg, rgba(0, 74, 152, 0.15) 0%, rgba(0, 102, 204, 0.15) 100%)';
                 e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 8px 20px rgba(16, 185, 129, 0.25)';
+                e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 74, 152, 0.25)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = darkMode 
-                  ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.15) 100%)'
-                  : 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%)';
+                  ? 'linear-gradient(135deg, rgba(0, 74, 152, 0.15) 0%, rgba(0, 102, 204, 0.15) 100%)'
+                  : 'linear-gradient(135deg, rgba(0, 74, 152, 0.1) 0%, rgba(0, 102, 204, 0.1) 100%)';
                 e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.15)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 74, 152, 0.15)';
               }}
             >
               <div className="relative flex items-center justify-between">
@@ -373,21 +343,21 @@ export const Sidebar = ({
                     className="w-8 h-8 rounded-lg flex items-center justify-center relative group-hover:scale-110 transition-transform duration-300 p-1"
                     style={{ 
                       background: '#ffffff',
-                      boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)'
+                      boxShadow: '0 4px 12px rgba(0, 74, 152, 0.4)'
                     }}
                   >
                     <img 
-                      src="/src/starbooks logo.png" 
-                      alt="STARBOOKS Logo" 
+                      src="/src/Cest Logo.png" 
+                      alt="CEST Logo" 
                       className="w-full h-full object-contain relative z-10" 
                     />
                   </div>
                   <div className="text-left">
                     <div 
                       className="text-xs font-bold"
-                      style={{ color: '#10b981' }}
+                      style={{ color: '#004A98' }}
                     >
-                      Switch to STARBOOKS
+                      Switch to CEST
                     </div>
                   </div>
                 </div>
@@ -395,7 +365,6 @@ export const Sidebar = ({
             </button>
           )}
 
-          {/* Logout Button */}
           <button 
             onClick={handleLogout}
             className={`w-full rounded-lg transition-all duration-200 group ${
@@ -434,6 +403,7 @@ export const Sidebar = ({
           </button>
         </div>
 
+        {/* Footer */}
         {!isCollapsed && (
           <div 
             className="px-4 py-3 border-t"
@@ -461,7 +431,7 @@ export const Sidebar = ({
                   letterSpacing: '0.01em'
                 }}
               >
-                Department of Science and Technology
+                STARBOOKS Digital Library
               </p>
             </div>
           </div>
@@ -484,10 +454,9 @@ export const Sidebar = ({
               style={{
                 background: darkMode ? '#0f172a' : '#ffffff',
                 border: `1px solid ${darkMode ? '#1e293b' : '#e5e7eb'}`,
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
               }}
             >
-              {/* Header */}
               <div 
                 className="p-6 border-b"
                 style={{ borderColor: darkMode ? '#1e293b' : '#e5e7eb' }}
@@ -510,21 +479,18 @@ export const Sidebar = ({
                 </div>
               </div>
 
-              {/* Content */}
               <div className="p-6">
                 <p className="text-sm mb-6" style={{ color: darkMode ? '#cbd5e1' : '#475569' }}>
-                  You will be redirected to the login page and will need to sign in again to access the system.
+                  You will be redirected to the login page.
                 </p>
 
-                {/* Actions */}
                 <div className="flex gap-3">
                   <button
                     onClick={() => setShowLogoutModal(false)}
                     className="flex-1 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-200 hover:scale-105"
                     style={{
                       background: darkMode ? '#1e293b' : '#f1f5f9',
-                      color: darkMode ? '#f8fafc' : '#0f172a',
-                      border: `1px solid ${darkMode ? '#334155' : '#e2e8f0'}`
+                      color: darkMode ? '#f8fafc' : '#0f172a'
                     }}
                   >
                     Cancel
@@ -544,32 +510,6 @@ export const Sidebar = ({
               </div>
             </div>
           </div>
-
-          <style>{`
-            @keyframes fade-in {
-              from { opacity: 0; }
-              to { opacity: 1; }
-            }
-            
-            @keyframes scale-in {
-              from {
-                opacity: 0;
-                transform: translate(-50%, -50%) scale(0.9);
-              }
-              to {
-                opacity: 1;
-                transform: translate(-50%, -50%) scale(1);
-              }
-            }
-            
-            .animate-fade-in {
-              animation: fade-in 0.2s ease-out;
-            }
-            
-            .animate-scale-in {
-              animation: scale-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            }
-          `}</style>
         </>
       )}
 
@@ -590,42 +530,32 @@ export const Sidebar = ({
                 background: darkMode 
                   ? 'linear-gradient(145deg, #0f172a 0%, #1e293b 100%)'
                   : 'linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)',
-                border: `2px solid ${darkMode ? 'rgba(16, 185, 129, 0.3)' : 'rgba(16, 185, 129, 0.2)'}`,
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(16, 185, 129, 0.1)'
+                border: `2px solid ${darkMode ? 'rgba(0, 74, 152, 0.3)' : 'rgba(0, 74, 152, 0.2)'}`,
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 74, 152, 0.1)'
               }}
             >
-              {/* Animated Background Pattern */}
-              <div 
-                className="absolute inset-0 opacity-5"
-                style={{
-                  backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(16, 185, 129, 0.8) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(5, 150, 105, 0.8) 0%, transparent 50%)',
-                  animation: 'float 6s ease-in-out infinite'
-                }}
-              />
-
-              {/* Header with Icon */}
+              {/* Header */}
               <div 
                 className="relative p-8 border-b"
                 style={{ 
                   borderColor: darkMode ? 'rgba(30, 41, 59, 0.6)' : 'rgba(226, 232, 240, 0.8)',
                   background: darkMode 
-                    ? 'linear-gradient(180deg, rgba(16, 185, 129, 0.1) 0%, transparent 100%)'
-                    : 'linear-gradient(180deg, rgba(16, 185, 129, 0.05) 0%, transparent 100%)'
+                    ? 'linear-gradient(180deg, rgba(0, 74, 152, 0.1) 0%, transparent 100%)'
+                    : 'linear-gradient(180deg, rgba(0, 74, 152, 0.05) 0%, transparent 100%)'
                 }}
               >
                 <div className="flex items-start gap-5">
-                  {/* Animated Icon Container */}
                   <div className="relative">
                     <div 
                       className="w-16 h-16 rounded-2xl flex items-center justify-center relative p-3"
                       style={{ 
                         background: '#ffffff',
-                        boxShadow: '0 8px 24px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
+                        boxShadow: '0 8px 24px rgba(0, 74, 152, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
                       }}
                     >
                       <img 
-                        src="/src/starbooks logo.png" 
-                        alt="STARBOOKS Logo" 
+                        src="/src/Cest Logo.png" 
+                        alt="CEST Logo" 
                         className="w-full h-full object-contain relative z-10" 
                       />
                     </div>
@@ -634,18 +564,15 @@ export const Sidebar = ({
                   <div className="flex-1">
                     <h3 
                       className="text-2xl font-bold mb-2"
-                      style={{ 
-                        color: darkMode ? '#f8fafc' : '#0f172a',
-                        textShadow: darkMode ? '0 2px 4px rgba(0,0,0,0.3)' : 'none'
-                      }}
+                      style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}
                     >
-                      Switch to STARBOOKS?
+                      Switch to CEST?
                     </h3>
                     <p 
                       className="text-sm leading-relaxed"
                       style={{ color: darkMode ? '#94a3b8' : '#64748b' }}
                     >
-                      You're about to switch to the Digital Library Management System
+                      You're about to switch to the Project Management Dashboard
                     </p>
                   </div>
                 </div>
@@ -654,13 +581,12 @@ export const Sidebar = ({
               {/* Content */}
               <div className="relative p-8">
                 <div className="space-y-6">
-                  {/* Feature Highlights */}
                   <div className="grid grid-cols-2 gap-4">
                     {[
-                      { icon: Package, label: 'Inventory', color: '#10b981' },
-                      { icon: MapPin, label: 'Locations', color: '#059669' },
-                      { icon: Users, label: 'Users', color: '#10b981' },
-                      { icon: BarChart3, label: 'Reports', color: '#059669' }
+                      { icon: LayoutDashboard, label: 'Dashboard', color: '#004A98' },
+                      { icon: BarChart3, label: 'Analytics', color: '#0066CC' },
+                      { icon: FileText, label: 'Data Entry', color: '#004A98' },
+                      { icon: Settings, label: 'Monitoring', color: '#0066CC' }
                     ].map((feature, index) => {
                       const Icon = feature.icon;
                       return (
@@ -669,10 +595,9 @@ export const Sidebar = ({
                           className="flex items-center gap-3 p-3 rounded-xl transition-all duration-300 hover:scale-105"
                           style={{
                             background: darkMode 
-                              ? 'rgba(16, 185, 129, 0.1)' 
-                              : 'rgba(16, 185, 129, 0.05)',
-                            border: `1px solid ${darkMode ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.15)'}`,
-                            animationDelay: `${index * 0.1}s`
+                              ? 'rgba(0, 74, 152, 0.1)' 
+                              : 'rgba(0, 74, 152, 0.05)',
+                            border: `1px solid ${darkMode ? 'rgba(0, 74, 152, 0.2)' : 'rgba(0, 74, 152, 0.15)'}`
                           }}
                         >
                           <div 
@@ -692,7 +617,6 @@ export const Sidebar = ({
                     })}
                   </div>
 
-                  {/* Info Box */}
                   <div 
                     className="p-4 rounded-xl"
                     style={{
@@ -713,7 +637,7 @@ export const Sidebar = ({
                         className="text-xs leading-relaxed"
                         style={{ color: darkMode ? '#94a3b8' : '#64748b' }}
                       >
-                        Your current work will be saved. You can switch back to CEST anytime from the STARBOOKS sidebar.
+                        Your current work will be saved. You can switch back to STARBOOKS anytime from the CEST sidebar.
                       </p>
                     </div>
                   </div>
@@ -740,12 +664,6 @@ export const Sidebar = ({
                       border: `2px solid ${darkMode ? '#334155' : '#e2e8f0'}`,
                       boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = darkMode ? '#334155' : '#e2e8f0';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = darkMode ? '#1e293b' : '#f1f5f9';
-                    }}
                   >
                     Cancel
                   </button>
@@ -753,31 +671,23 @@ export const Sidebar = ({
                     onClick={confirmSwitch}
                     className="flex-1 px-6 py-3.5 rounded-xl text-sm font-bold transition-all duration-300 hover:scale-105 relative overflow-hidden group"
                     style={{
-                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                      background: 'linear-gradient(135deg, #004A98 0%, #0066CC 100%)',
                       color: '#ffffff',
-                      boxShadow: '0 8px 24px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
+                      boxShadow: '0 8px 24px rgba(0, 74, 152, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
                       border: '2px solid rgba(255,255,255,0.1)'
                     }}
                   >
-                    {/* Shine effect on hover */}
-                    <div 
-                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                      style={{
-                        background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%)',
-                        animation: 'shine 1.5s ease-in-out infinite'
-                      }}
-                    />
                     <span className="relative z-10 flex items-center justify-center gap-2">
                       Switch Now
                       <div 
-                        className="w-5 h-5 rounded-md p-0.5"
+                        className="w-4 h-4 rounded-md p-0.5"
                         style={{ 
                           background: '#ffffff'
                         }}
                       >
                         <img 
-                          src="/src/starbooks logo.png" 
-                          alt="STARBOOKS" 
+                          src="/src/Cest Logo.png" 
+                          alt="CEST" 
                           className="w-full h-full object-contain" 
                         />
                       </div>
@@ -806,39 +716,12 @@ export const Sidebar = ({
               }
             }
 
-            @keyframes float {
-              0%, 100% {
-                transform: translateY(0px);
-              }
-              50% {
-                transform: translateY(-10px);
-              }
-            }
-
             @keyframes spin {
               from {
                 transform: rotate(0deg);
               }
               to {
                 transform: rotate(360deg);
-              }
-            }
-
-            @keyframes shine {
-              0% {
-                transform: translateX(-100%);
-              }
-              100% {
-                transform: translateX(100%);
-              }
-            }
-
-            @keyframes pulse {
-              0%, 100% {
-                opacity: 1;
-              }
-              50% {
-                opacity: 0.5;
               }
             }
           `}</style>

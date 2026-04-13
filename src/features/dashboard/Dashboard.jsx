@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TrendingUp, Users, Package, Info } from "lucide-react";
-import { fmt } from "../../shared/utils/helpers";
+import { fmt, getStatusColor, getCardStyle, formatCurrencyShort } from "../../shared/utils/helpers";
 import { COMPONENTS, COMP_COLORS } from "../../shared/constants";
 import { getAllProvinces } from "../../shared/data/regionII";
 import {
@@ -61,9 +61,6 @@ export const Dashboard = ({ projects, equipment, uniqueComm, darkMode }) => {
     })
     .sort((a, b) => b.budget - a.budget);
 
-  const maxBudget = barData.reduce((m, d) => Math.max(m, d.budget), 0);
-  const fmtChart = (v) => (maxBudget >= 1_000_000 ? `₱${(v / 1_000_000).toFixed(1)}M` : `₱${(v / 1_000).toFixed(0)}k`);
-
   const compCounts = Object.entries(COMPONENTS)
     .map(([k]) => ({
       name: k.toUpperCase(),
@@ -75,22 +72,8 @@ export const Dashboard = ({ projects, equipment, uniqueComm, darkMode }) => {
   // Modern muted color palette with DOST blue
   const MODERN_COLORS = ["#004A98", "#0066CC", "#3b82f6", "#8b5cf6", "#10b981", "#f59e0b"];
 
-  const getStatusColor = (status) => {
-    if (status === "Ongoing") return darkMode ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" : "text-emerald-700 bg-emerald-50 border-emerald-200";
-    if (status === "Liquidated") return darkMode ? "text-amber-400 bg-amber-500/10 border-amber-500/20" : "text-amber-700 bg-amber-50 border-amber-200";
-    return darkMode ? "text-blue-400 bg-blue-500/10 border-blue-500/20" : "text-blue-700 bg-blue-50 border-blue-200";
-  };
-
   // Modern card style with subtle elevation
-  const cardStyle = {
-    background: darkMode 
-      ? 'linear-gradient(145deg, #0f172a 0%, #1e293b 100%)'
-      : 'linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)',
-    border: `1px solid ${darkMode ? '#1e293b' : '#e5e7eb'}`,
-    boxShadow: darkMode 
-      ? '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)' 
-      : '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
-  };
+  const cardStyle = getCardStyle(darkMode);
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">
@@ -225,7 +208,7 @@ export const Dashboard = ({ projects, equipment, uniqueComm, darkMode }) => {
                         {p.project}
                       </h3>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-md border ${getStatusColor(p.status)}`}>
+                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-md border ${getStatusColor(p.status, darkMode)}`}>
                           {p.status}
                         </span>
                         {p.components.slice(0, 2).map((c) => (
@@ -325,7 +308,7 @@ export const Dashboard = ({ projects, equipment, uniqueComm, darkMode }) => {
                     </h3>
                     
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`text-xs font-medium px-2 py-1 rounded border ${getStatusColor(p.status)}`}>
+                      <span className={`text-xs font-medium px-2 py-1 rounded border ${getStatusColor(p.status, darkMode)}`}>
                         {p.status}
                       </span>
                       {p.components.map((c) => (
@@ -407,7 +390,7 @@ export const Dashboard = ({ projects, equipment, uniqueComm, darkMode }) => {
                       />
                       <YAxis 
                         tick={{ fontSize: 11, fill: darkMode ? "#94a3b8" : "#64748b", fontWeight: 500 }} 
-                        tickFormatter={fmtChart} 
+                        tickFormatter={formatCurrencyShort} 
                         tickLine={false} 
                         axisLine={false}
                         width={60}
@@ -429,7 +412,7 @@ export const Dashboard = ({ projects, equipment, uniqueComm, darkMode }) => {
                                   {payload[0].payload.fullName}
                                 </p>
                                 <p className="font-bold text-lg" style={{ color: '#004A98' }}>
-                                  {fmtChart(payload[0].value)}
+                                  {formatCurrencyShort(payload[0].value)}
                                 </p>
                                 <p className="text-xs mt-1" style={{ color: '#10b981' }}>
                                   Click to view details →

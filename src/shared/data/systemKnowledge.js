@@ -85,10 +85,6 @@ CEST 2.0 is a comprehensive project management and analytics dashboard for the D
   - Analytics and maintenance tracking
   - Contact information and support details
 
-### 8. KPI REPORTS
-- **Purpose**: Generate key performance indicator reports
-- **Status**: Coming soon - feature in development
-
 ## Top Navigation Bar Features
 
 ### Search Function
@@ -137,8 +133,7 @@ CEST 2.0 is a comprehensive project management and analytics dashboard for the D
 5. **Trainings** - Training programs (coming soon)
 6. **STARBOOKS** - Digital library kiosk management
 7. **Archive** - Archived projects
-8. **KPI Reports** - Performance reports (coming soon)
-9. **Logout** - Sign out of system
+8. **Logout** - Sign out of system
 
 ## STARBOOKS - Digital Library Management
 
@@ -288,7 +283,6 @@ To democratize access to science and technology information by providing digital
 #### Data Synchronization
 - **Real-time Updates**: Inventory data syncs automatically
 - **Cross-Platform**: Works with other CEST 2.0 modules
-- **Reporting Integration**: STARBOOKS data included in KPI reports
 - **Analytics Connection**: Usage data feeds into regional analytics
 
 #### User Permissions

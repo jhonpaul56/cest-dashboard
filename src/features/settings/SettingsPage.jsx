@@ -57,13 +57,13 @@ export const SettingsPage = ({ darkMode, setDarkMode, onClose }) => {
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/70 backdrop-blur-md z-[9996] animate-fade-in"
+        className="fixed inset-0 bg-black/70 backdrop-blur-md z-[9996] animate-backdrop-fade-in"
         onClick={onClose}
       />
       
       {/* Settings Modal */}
       <div 
-        className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-2xl shadow-2xl z-[9997] animate-scale-in"
+        className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-2xl shadow-2xl z-[9997] animate-modal-fade-in"
         style={{
           background: darkMode ? '#1e293b' : '#ffffff',
           border: `1px solid ${darkMode ? '#334155' : '#e5e7eb'}`

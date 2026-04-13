@@ -1,13 +1,27 @@
 import { useState } from "react";
-import { BookOpen, MapPin, Users, Plus, Search, Filter, Edit, Trash2, Eye, Package, CheckCircle, Clock, TrendingUp, Phone, X, Calendar, Monitor, Tablet, Activity, BarChart3, Download, RefreshCw, Settings, Star } from "lucide-react";
+import { BookOpen, MapPin, Users, Plus, Search, Filter, Edit, Trash2, Eye, Package, CheckCircle, Clock, Phone, X, Calendar, Monitor, Tablet, Activity, Download, RefreshCw, Star } from "lucide-react";
+import { DocumentationPage } from "./DocumentationPage";
 
-export const StarbooksPage = ({ darkMode }) => {
+export const StarbooksPage = ({ darkMode, activePage = "starbooks" }) => {
   const [activeTab, setActiveTab] = useState("inventory");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+
+  // Map activePage to content sections
+  const getPageTitle = () => {
+    switch(activePage) {
+      case "starbooks": return "Inventory Management";
+      case "starbooks-locations": return "Locations";
+      case "starbooks-users": return "Users Management";
+      case "starbooks-reports": return "Reports & Analytics";
+      case "starbooks-maintenance": return "Maintenance Center";
+      case "starbooks-docs": return "Documentation";
+      default: return "Inventory Management";
+    }
+  };
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newUnit, setNewUnit] = useState({
@@ -375,115 +389,164 @@ export const StarbooksPage = ({ darkMode }) => {
   ];
   return (
     <div className="max-w-[1600px] mx-auto space-y-8 animate-fade-in">
-      {/* Enhanced Header with Gradient Background */}
-      <div className="relative overflow-hidden rounded-3xl p-8" style={{
-        background: 'linear-gradient(135deg, #004A98 0%, #0066CC 30%, #10b981 70%, #059669 100%)',
-        boxShadow: '0 20px 60px rgba(0, 74, 152, 0.3)'
-      }}>
-        <div className="absolute inset-0 opacity-20" style={{
-          backgroundImage: 'radial-gradient(circle at 25% 25%, white 2px, transparent 2px), radial-gradient(circle at 75% 75%, white 1px, transparent 1px)',
-          backgroundSize: '60px 60px, 30px 30px'
-        }}></div>
-        
-        <div className="relative z-10">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <div className="p-4 rounded-2xl bg-white/20 backdrop-blur-sm">
-                <BookOpen className="w-12 h-12 text-white" />
-              </div>
+      {/* Content based on active tab */}
+      {activePage === "starbooks-docs" ? (
+        // Show Documentation Gallery
+        <DocumentationPage darkMode={darkMode} />
+      ) : activePage !== "starbooks" ? (
+        // Show placeholder for other sections
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div 
+            className="text-center p-12 rounded-3xl backdrop-blur-xl shadow-2xl max-w-md animate-fade-in"
+            style={{
+              background: darkMode 
+                ? 'linear-gradient(145deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.8) 100%)'
+                : 'linear-gradient(145deg, rgba(255, 255, 255, 0.8) 0%, rgba(248, 250, 252, 0.8) 100%)',
+              border: `1px solid ${darkMode ? '#1e293b' : '#e2e8f0'}`
+            }}
+          >
+            <div className="w-24 h-24 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-glow">
+              <span className="text-5xl">
+                {activePage === "starbooks-locations" && "📍"}
+                {activePage === "starbooks-users" && "👥"}
+                {activePage === "starbooks-reports" && "📊"}
+                {activePage === "starbooks-maintenance" && "🔧"}
+                {activePage === "starbooks-docs" && "📚"}
+              </span>
+            </div>
+            <h2 className="text-3xl font-bold mb-3 gradient-text">
+              {getPageTitle()}
+            </h2>
+            <p className="font-medium mb-4" style={{ color: darkMode ? '#94a3b8' : '#475569' }}>
+              This section is coming soon
+            </p>
+            <div 
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold"
+              style={{
+                backgroundColor: darkMode ? 'rgba(16, 185, 129, 0.3)' : '#d1fae5',
+                color: darkMode ? '#10b981' : '#059669'
+              }}
+            >
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+              In Development
+            </div>
+          </div>
+        </div>
+      ) : activeTab === "inventory" && (
+        <div className="space-y-6">
+          {/* Simple Header with Stats Summary */}
+          <div className="rounded-2xl p-6" style={{
+            ...cardStyle,
+            background: darkMode 
+              ? 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)'
+              : 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)'
+          }}>
+            <div className="flex items-center justify-between mb-6">
               <div>
-                <h1 className="text-4xl font-bold text-white mb-2">
+                <h1 className="text-3xl font-bold mb-2" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
                   STARBOOKS Inventory
                 </h1>
-                <p className="text-white/90 text-lg">
-                  Science & Technology Academic Research-Based Openly Operated KioskS
-                </p>
-                <p className="text-white/70 text-sm mt-1">
+                <p className="text-sm" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
                   Manage and track STARBOOKS kiosks deployment across Region II
                 </p>
               </div>
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all duration-300 hover:scale-105 shadow-lg"
+                style={{
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  color: '#ffffff'
+                }}
+              >
+                <Plus className="w-5 h-5" />
+                Add New Unit
+              </button>
             </div>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-3 px-8 py-4 rounded-2xl text-lg font-bold transition-all duration-300 hover:scale-105 hover:shadow-2xl bg-white/95 text-blue-600 backdrop-blur-sm"
-            >
-              <Plus className="w-6 h-6" />
-              Add STARBOOKS Unit
-            </button>
-          </div>
 
-          {/* Enhanced Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {headerStats.map((stat) => {
-              const Icon = stat.icon;
-              return (
-                <div key={stat.label} className="rounded-2xl p-6 transition-all duration-300 hover:scale-105 hover:shadow-xl" style={{ background: stat.color }}>
-                  <div className="flex items-start justify-between mb-4">
-                    <div 
-                      className="p-3 rounded-xl"
-                      style={{ background: `${stat.textColor}20` }}
-                    >
-                      <Icon className="w-8 h-8" style={{ color: stat.textColor }} />
-                    </div>
-                    <div className="text-right">
-                      <div className="text-xs font-bold px-2 py-1 rounded-full" style={{ 
-                        background: stat.trend.startsWith('+') ? '#10b98120' : '#ef444420',
-                        color: stat.trend.startsWith('+') ? '#10b981' : '#ef4444'
-                      }}>
-                        {stat.trend}
-                      </div>
-                    </div>
+            {/* Quick Stats */}
+            <div className="grid grid-cols-4 gap-4">
+              <div className="p-4 rounded-xl transition-all duration-300 hover:scale-105" style={{ 
+                background: darkMode ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.05)',
+                border: `1px solid ${darkMode ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.15)'}`
+              }}>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg" style={{ background: 'rgba(16, 185, 129, 0.2)' }}>
+                    <Package className="w-5 h-5" style={{ color: '#10b981' }} />
                   </div>
                   <div>
-                    <p className="text-xs font-medium mb-2" style={{ color: `${stat.textColor}80` }}>
-                      {stat.label}
-                    </p>
-                    <p className="text-3xl font-bold mb-1" style={{ color: stat.textColor }}>
-                      {stat.value}
-                    </p>
-                    <p className="text-xs" style={{ color: `${stat.textColor}60` }}>
-                      {stat.subtitle}
-                    </p>
+                    <div className="text-2xl font-bold" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
+                      {starbooksInventory.length}
+                    </div>
+                    <div className="text-xs font-medium" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
+                      Total Units
+                    </div>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Enhanced Navigation Tabs */}
-      <div className="flex flex-wrap gap-3 justify-center">
-        {[
-          { id: "inventory", label: "Inventory Management", icon: Package, description: "View and manage all units" },
-          { id: "analytics", label: "Analytics Dashboard", icon: BarChart3, description: "Usage statistics and insights" },
-          { id: "maintenance", label: "Maintenance Center", icon: Settings, description: "Service history and scheduling" }
-        ].map((tab) => {
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className="flex items-center gap-3 px-6 py-4 rounded-2xl text-sm font-bold transition-all duration-300 hover:scale-105 group"
-              style={tabStyle(activeTab === tab.id)}
-            >
-              <Icon className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
-              <div className="text-left">
-                <div>{tab.label}</div>
-                <div className="text-xs opacity-70 font-normal">{tab.description}</div>
               </div>
-            </button>
-          );
-        })}
-      </div>
 
-      {/* Content based on active tab */}
-      {activeTab === "inventory" && (
-        <div className="space-y-8">
+              <div className="p-4 rounded-xl transition-all duration-300 hover:scale-105" style={{ 
+                background: darkMode ? 'rgba(34, 197, 94, 0.1)' : 'rgba(34, 197, 94, 0.05)',
+                border: `1px solid ${darkMode ? 'rgba(34, 197, 94, 0.2)' : 'rgba(34, 197, 94, 0.15)'}`
+              }}>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg" style={{ background: 'rgba(34, 197, 94, 0.2)' }}>
+                    <CheckCircle className="w-5 h-5" style={{ color: '#22c55e' }} />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
+                      {starbooksInventory.filter(s => s.status === "Active").length}
+                    </div>
+                    <div className="text-xs font-medium" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
+                      Active
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-xl transition-all duration-300 hover:scale-105" style={{ 
+                background: darkMode ? 'rgba(251, 146, 60, 0.1)' : 'rgba(251, 146, 60, 0.05)',
+                border: `1px solid ${darkMode ? 'rgba(251, 146, 60, 0.2)' : 'rgba(251, 146, 60, 0.15)'}`
+              }}>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg" style={{ background: 'rgba(251, 146, 60, 0.2)' }}>
+                    <Clock className="w-5 h-5" style={{ color: '#fb923c' }} />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
+                      {starbooksInventory.filter(s => s.status === "Maintenance").length}
+                    </div>
+                    <div className="text-xs font-medium" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
+                      Maintenance
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-xl transition-all duration-300 hover:scale-105" style={{ 
+                background: darkMode ? 'rgba(139, 92, 246, 0.1)' : 'rgba(139, 92, 246, 0.05)',
+                border: `1px solid ${darkMode ? 'rgba(139, 92, 246, 0.2)' : 'rgba(139, 92, 246, 0.15)'}`
+              }}>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg" style={{ background: 'rgba(139, 92, 246, 0.2)' }}>
+                    <Users className="w-5 h-5" style={{ color: '#8b5cf6' }} />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
+                      {starbooksInventory.reduce((sum, s) => sum + s.beneficiaries, 0).toLocaleString()}
+                    </div>
+                    <div className="text-xs font-medium" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
+                      Beneficiaries
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Enhanced Search and Filters */}
-          <div className="rounded-2xl p-8" style={cardStyle}>
-            <div className="flex flex-col lg:flex-row gap-6">
-              {/* Advanced Search */}
+          <div className="rounded-2xl p-6" style={cardStyle}>
+            <div className="flex flex-col lg:flex-row gap-4">
+              {/* Search */}
               <div className="flex-1 relative group">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300" style={{ color: darkMode ? '#64748b' : '#94a3b8' }} />
                 <input
@@ -497,332 +560,345 @@ export const StarbooksPage = ({ darkMode }) => {
                     color: darkMode ? '#f8fafc' : '#0f172a',
                     border: `2px solid ${darkMode ? '#334155' : '#e2e8f0'}`
                   }}
-                  onFocus={(e) => e.target.style.borderColor = '#004A98'}
+                  onFocus={(e) => e.target.style.borderColor = '#10b981'}
                   onBlur={(e) => e.target.style.borderColor = darkMode ? '#334155' : '#e2e8f0'}
                 />
               </div>
 
               {/* Status Filter */}
               <div className="relative">
-                <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: darkMode ? '#64748b' : '#94a3b8' }} />
+                <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" style={{ color: darkMode ? '#64748b' : '#94a3b8' }} />
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="pl-12 pr-8 py-4 rounded-xl text-sm outline-none cursor-pointer transition-all duration-300 hover:shadow-lg"
+                  className="pl-12 pr-8 py-4 rounded-xl text-sm outline-none cursor-pointer transition-all duration-300 hover:shadow-lg appearance-none"
                   style={{
                     background: darkMode ? '#1e293b' : '#f8fafc',
                     color: darkMode ? '#f8fafc' : '#0f172a',
-                    border: `2px solid ${darkMode ? '#334155' : '#e2e8f0'}`
+                    border: `2px solid ${darkMode ? '#334155' : '#e2e8f0'}`,
+                    minWidth: '200px'
                   }}
                 >
                   <option value="all">All Status</option>
-                  <option value="active">Active Units</option>
-                  <option value="maintenance">Under Maintenance</option>
-                  <option value="inactive">Inactive Units</option>
+                  <option value="active">✓ Active Units</option>
+                  <option value="maintenance">⚠ Under Maintenance</option>
+                  <option value="inactive">✕ Inactive Units</option>
                 </select>
               </div>
 
               {/* Quick Actions */}
               <div className="flex gap-3">
-                <button className="p-4 rounded-xl transition-all duration-300 hover:scale-110" style={{
-                  background: darkMode ? '#1e293b' : '#f8fafc',
-                  border: `2px solid ${darkMode ? '#334155' : '#e2e8f0'}`
-                }}>
-                  <Download className="w-5 h-5" style={{ color: '#10b981' }} />
+                <button 
+                  className="p-4 rounded-xl transition-all duration-300 hover:scale-110 group"
+                  style={{
+                    background: darkMode ? '#1e293b' : '#f8fafc',
+                    border: `2px solid ${darkMode ? '#334155' : '#e2e8f0'}`
+                  }}
+                  title="Export to Excel"
+                >
+                  <Download className="w-5 h-5 group-hover:scale-110 transition-transform" style={{ color: '#10b981' }} />
                 </button>
-                <button className="p-4 rounded-xl transition-all duration-300 hover:scale-110" style={{
-                  background: darkMode ? '#1e293b' : '#f8fafc',
-                  border: `2px solid ${darkMode ? '#334155' : '#e2e8f0'}`
-                }}>
-                  <RefreshCw className="w-5 h-5" style={{ color: '#004A98' }} />
+                <button 
+                  className="p-4 rounded-xl transition-all duration-300 hover:scale-110 group"
+                  style={{
+                    background: darkMode ? '#1e293b' : '#f8fafc',
+                    border: `2px solid ${darkMode ? '#334155' : '#e2e8f0'}`
+                  }}
+                  title="Refresh Data"
+                >
+                  <RefreshCw className="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" style={{ color: '#004A98' }} />
                 </button>
               </div>
             </div>
+
+            {/* Results Count */}
+            <div className="mt-4 flex items-center justify-between">
+              <p className="text-sm font-medium" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
+                Showing <span className="font-bold" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>{filteredInventory.length}</span> of <span className="font-bold" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>{starbooksInventory.length}</span> units
+              </p>
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="text-sm font-medium px-3 py-1 rounded-lg transition-all duration-300 hover:scale-105"
+                  style={{
+                    color: '#10b981',
+                    background: darkMode ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.05)'
+                  }}
+                >
+                  Clear search
+                </button>
+              )}
+            </div>
           </div>
 
-          {/* Enhanced Inventory Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-            {filteredInventory.map((item, index) => (
+          {/* Enhanced Inventory List */}
+          <div className="space-y-4">
+            {filteredInventory.length === 0 ? (
+              <div className="text-center py-20 rounded-2xl" style={cardStyle}>
+                <div className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center" style={{ background: darkMode ? 'rgba(100, 116, 139, 0.1)' : 'rgba(148, 163, 184, 0.1)' }}>
+                  <Package className="w-10 h-10" style={{ color: darkMode ? '#64748b' : '#94a3b8' }} />
+                </div>
+                <h3 className="text-2xl font-bold mb-4" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
+                  {searchQuery || statusFilter !== 'all' ? 'No units found' : 'No STARBOOKS units yet'}
+                </h3>
+                <p className="text-lg mb-6" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
+                  {searchQuery || statusFilter !== 'all' 
+                    ? 'Try adjusting your search or filter criteria' 
+                    : 'Get started by adding your first STARBOOKS unit'}
+                </p>
+                <button
+                  onClick={() => {
+                    if (searchQuery || statusFilter !== 'all') {
+                      setSearchQuery('');
+                      setStatusFilter('all');
+                    } else {
+                      setShowAddModal(true);
+                    }
+                  }}
+                  className="px-8 py-4 rounded-xl font-bold transition-all duration-300 hover:scale-105 shadow-lg"
+                  style={{
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    color: '#ffffff'
+                  }}
+                >
+                  {searchQuery || statusFilter !== 'all' ? 'Clear Filters' : 'Add Your First Unit'}
+                </button>
+              </div>
+            ) : (
+              filteredInventory.map((item, index) => (
               <div
                 key={item.id}
-                className="rounded-2xl overflow-hidden transition-all duration-500 hover:scale-105 hover:shadow-2xl group cursor-pointer animate-slide-up"
+                className="rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 group cursor-pointer animate-slide-up"
                 style={{
                   ...cardStyle,
-                  animationDelay: `${index * 100}ms`
+                  animationDelay: `${index * 50}ms`,
+                  border: `2px solid ${darkMode ? '#334155' : '#e2e8f0'}`
                 }}
+                onClick={() => handleViewDetails(item)}
               >
-                {/* Image Header */}
-                <div className="relative h-48 overflow-hidden">
-                  <img
-                    src={item.images[0]}
-                    alt={item.location}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                  
-                  {/* Status Badge */}
-                  <div className="absolute top-4 left-4">
-                    <span 
-                      className="px-3 py-1 rounded-full text-xs font-bold backdrop-blur-sm"
-                      style={{ 
-                        background: `${getStatusColor(item.status)}20`, 
-                        color: getStatusColor(item.status),
-                        border: `1px solid ${getStatusColor(item.status)}40`
-                      }}
-                    >
-                      {item.status}
+                {/* Status Banner */}
+                <div className="h-2" style={{ 
+                  background: `linear-gradient(90deg, ${getStatusColor(item.status)} 0%, ${getStatusColor(item.status)}dd 100%)`
+                }} />
+
+                {/* Header Row */}
+                <div className="p-6 border-b" style={{ borderColor: darkMode ? '#334155' : '#e2e8f0' }}>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 rounded-lg" style={{ background: `${getStatusColor(item.status)}20` }}>
+                          <Package className="w-5 h-5" style={{ color: getStatusColor(item.status) }} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-xl font-bold group-hover:text-green-600 transition-colors truncate" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
+                            {item.location}
+                          </h3>
+                          <p className="text-sm font-mono" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
+                            {item.serialNumber}
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-end gap-2">
+                          <span 
+                            className="px-3 py-1.5 rounded-full text-xs font-bold flex-shrink-0 shadow-sm"
+                            style={{ 
+                              background: `${getStatusColor(item.status)}`, 
+                              color: '#ffffff'
+                            }}
+                          >
+                            {item.status}
+                          </span>
+                          <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg" style={{ background: darkMode ? '#1e293b' : '#fef3c7' }}>
+                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                            <span className="text-sm font-bold" style={{ color: darkMode ? '#fbbf24' : '#f59e0b' }}>{item.rating}</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-wrap items-center gap-3 text-sm">
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg" style={{ 
+                          background: darkMode ? '#1e293b' : '#f1f5f9',
+                          border: `1px solid ${darkMode ? '#334155' : '#e2e8f0'}`
+                        }}>
+                          <MapPin className="w-4 h-4 flex-shrink-0" style={{ color: '#10b981' }} />
+                          <span style={{ color: darkMode ? '#cbd5e1' : '#475569' }} className="font-medium">{item.municipality}, {item.province}</span>
+                        </div>
+                        <span 
+                          className="px-3 py-1.5 rounded-lg text-xs font-bold"
+                          style={{ 
+                            background: `${getConditionColor(item.condition)}20`, 
+                            color: getConditionColor(item.condition),
+                            border: `1px solid ${getConditionColor(item.condition)}40`
+                          }}
+                        >
+                          Condition: {item.condition}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Content Row */}
+                <div className="p-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Left: Components & Contact */}
+                    <div className="lg:col-span-2 space-y-5">
+                      {/* Components */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="p-1.5 rounded-lg" style={{ background: darkMode ? '#1e293b' : '#f1f5f9' }}>
+                            <Package className="w-4 h-4" style={{ color: '#10b981' }} />
+                          </div>
+                          <p className="text-xs font-bold uppercase tracking-wide" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
+                            Installed Components
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {item.components.map((component, idx) => (
+                            <span 
+                              key={idx}
+                              className="px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-300 hover:scale-105"
+                              style={{ 
+                                background: darkMode ? '#1e293b' : '#f1f5f9',
+                                color: darkMode ? '#cbd5e1' : '#475569',
+                                border: `1px solid ${darkMode ? '#334155' : '#e2e8f0'}`
+                              }}
+                            >
+                              ✓ {component}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Contact Info */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="p-1.5 rounded-lg" style={{ background: darkMode ? '#1e293b' : '#f1f5f9' }}>
+                            <Phone className="w-4 h-4" style={{ color: '#3b82f6' }} />
+                          </div>
+                          <p className="text-xs font-bold uppercase tracking-wide" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
+                            Contact Information
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-4 text-sm p-3 rounded-lg" style={{ 
+                          background: darkMode ? '#1e293b' : '#f1f5f9',
+                          color: darkMode ? '#cbd5e1' : '#475569'
+                        }}>
+                          <div className="flex items-center gap-2">
+                            <Users className="w-4 h-4" style={{ color: '#8b5cf6' }} />
+                            <span className="font-semibold">{item.contactPerson}</span>
+                          </div>
+                          <span className="opacity-50">•</span>
+                          <div className="flex items-center gap-2">
+                            <Phone className="w-4 h-4" style={{ color: '#10b981' }} />
+                            <span>{item.contactPhone}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right: Stats */}
+                    <div className="space-y-3">
+                      <div className="p-5 rounded-xl text-center transition-all duration-300 hover:scale-105 hover:shadow-lg" style={{ 
+                        background: darkMode 
+                          ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%)'
+                          : 'linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(124, 58, 237, 0.05) 100%)',
+                        border: `2px solid ${darkMode ? 'rgba(139, 92, 246, 0.2)' : 'rgba(139, 92, 246, 0.15)'}`
+                      }}>
+                        <Users className="w-7 h-7 mx-auto mb-3" style={{ color: '#8b5cf6' }} />
+                        <div className="text-3xl font-bold mb-1" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
+                          {item.beneficiaries.toLocaleString()}
+                        </div>
+                        <div className="text-xs font-bold uppercase tracking-wide" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
+                          Beneficiaries
+                        </div>
+                      </div>
+                      <div className="p-5 rounded-xl text-center transition-all duration-300 hover:scale-105 hover:shadow-lg" style={{ 
+                        background: darkMode 
+                          ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%)'
+                          : 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.05) 100%)',
+                        border: `2px solid ${darkMode ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.15)'}`
+                      }}>
+                        <Activity className="w-7 h-7 mx-auto mb-3" style={{ color: '#10b981' }} />
+                        <div className="text-3xl font-bold mb-1" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
+                          {item.uptime}%
+                        </div>
+                        <div className="text-xs font-bold uppercase tracking-wide" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
+                          Uptime
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer Row */}
+                <div className="px-6 py-4 border-t flex items-center justify-between" style={{ 
+                  borderColor: darkMode ? '#334155' : '#e2e8f0',
+                  background: darkMode ? 'rgba(15, 23, 42, 0.5)' : 'rgba(248, 250, 252, 0.8)'
+                }}>
+                  <div className="flex items-center gap-4 text-sm" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: darkMode ? '#1e293b' : '#ffffff' }}>
+                      <Calendar className="w-4 h-4" style={{ color: '#3b82f6' }} />
+                      <span className="font-medium">Deployed: {new Date(item.dateDeployed).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                    </div>
+                    <span className="font-mono font-bold px-3 py-1.5 rounded-lg" style={{ 
+                      color: '#10b981',
+                      background: darkMode ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.05)'
+                    }}>
+                      {item.id}
                     </span>
                   </div>
 
-                  {/* Rating */}
-                  <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-1 rounded-full bg-black/30 backdrop-blur-sm">
-                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                    <span className="text-xs font-bold text-white">{item.rating}</span>
-                  </div>
-
                   {/* Action Buttons */}
-                  <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="flex gap-2">
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
                         handleViewDetails(item);
                       }}
-                      className="p-2 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-colors"
+                      className="px-5 py-2.5 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg flex items-center gap-2 text-sm font-bold"
+                      style={{
+                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                        color: '#ffffff'
+                      }}
                     >
-                      <Eye className="w-4 h-4 text-white" />
-                    </button>
-                    <button className="p-2 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-colors">
-                      <Edit className="w-4 h-4 text-white" />
+                      <Eye className="w-4 h-4" />
+                      View Details
                     </button>
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDeleteUnit(item.id);
                       }}
-                      className="p-2 rounded-full bg-red-500/20 backdrop-blur-sm hover:bg-red-500/30 transition-colors"
+                      className="p-2.5 rounded-lg transition-all duration-300 hover:scale-110"
+                      style={{
+                        background: darkMode ? '#1e293b' : '#f1f5f9',
+                        color: '#3b82f6',
+                        border: `1px solid ${darkMode ? '#334155' : '#e2e8f0'}`
+                      }}
+                      title="Edit Unit"
                     >
-                      <Trash2 className="w-4 h-4 text-red-300" />
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (window.confirm(`Are you sure you want to delete ${item.location}?`)) {
+                          handleDeleteUnit(item.id);
+                        }
+                      }}
+                      className="p-2.5 rounded-lg transition-all duration-300 hover:scale-110"
+                      style={{
+                        background: darkMode ? '#1e293b' : '#f1f5f9',
+                        color: '#ef4444',
+                        border: `1px solid ${darkMode ? '#334155' : '#e2e8f0'}`
+                      }}
+                      title="Delete Unit"
+                    >
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
-
-                {/* Content */}
-                <div className="p-6">
-                  {/* Header */}
-                  <div className="mb-4">
-                    <h3 className="text-xl font-bold mb-2 group-hover:text-blue-600 transition-colors" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
-                      {item.location}
-                    </h3>
-                    <p className="text-sm font-medium" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
-                      {item.serialNumber}
-                    </p>
-                  </div>
-
-                  {/* Condition & Location */}
-                  <div className="flex items-center justify-between mb-4">
-                    <span 
-                      className="px-3 py-1 rounded-full text-xs font-bold"
-                      style={{ 
-                        background: `${getConditionColor(item.condition)}20`, 
-                        color: getConditionColor(item.condition) 
-                      }}
-                    >
-                      {item.condition}
-                    </span>
-                    <div className="flex items-center gap-1 text-xs" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
-                      <MapPin className="w-3 h-3" />
-                      {item.municipality}
-                    </div>
-                  </div>
-
-                  {/* Stats Grid */}
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="text-center p-3 rounded-xl" style={{ background: darkMode ? '#1e293b' : '#f8fafc' }}>
-                      <div className="flex items-center justify-center gap-1 mb-1">
-                        <Users className="w-4 h-4" style={{ color: '#8b5cf6' }} />
-                      </div>
-                      <div className="text-lg font-bold" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
-                        {item.beneficiaries}
-                      </div>
-                      <div className="text-xs" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
-                        Beneficiaries
-                      </div>
-                    </div>
-                    <div className="text-center p-3 rounded-xl" style={{ background: darkMode ? '#1e293b' : '#f8fafc' }}>
-                      <div className="flex items-center justify-center gap-1 mb-1">
-                        <Activity className="w-4 h-4" style={{ color: '#10b981' }} />
-                      </div>
-                      <div className="text-lg font-bold" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
-                        {item.uptime}%
-                      </div>
-                      <div className="text-xs" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
-                        Uptime
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Components */}
-                  <div className="mb-4">
-                    <p className="text-xs font-bold mb-2" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
-                      Components:
-                    </p>
-                    <div className="flex flex-wrap gap-1">
-                      {item.components.map((component, index) => (
-                        <span 
-                          key={index}
-                          className="px-2 py-1 rounded-md text-xs font-medium"
-                          style={{ 
-                            background: darkMode ? '#334155' : '#e2e8f0',
-                            color: darkMode ? '#f8fafc' : '#0f172a'
-                          }}
-                        >
-                          {component}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Footer Stats */}
-                  <div className="flex justify-between items-center pt-4 border-t" style={{ borderColor: darkMode ? '#334155' : '#e2e8f0' }}>
-                    <div className="text-xs" style={{ color: darkMode ? '#64748b' : '#94a3b8' }}>
-                      Deployed: {new Date(item.dateDeployed).toLocaleDateString()}
-                    </div>
-                    <div className="text-xs font-bold" style={{ color: '#004A98' }}>
-                      ID: {item.id}
-                    </div>
-                  </div>
-                </div>
               </div>
-            ))}
-          </div>
-
-          {filteredInventory.length === 0 && (
-            <div className="text-center py-20 rounded-2xl" style={cardStyle}>
-              <Package className="w-20 h-20 mx-auto mb-6" style={{ color: darkMode ? '#64748b' : '#94a3b8' }} />
-              <h3 className="text-2xl font-bold mb-4" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
-                No STARBOOKS units found
-              </h3>
-              <p className="text-lg mb-6" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
-                Try adjusting your search or filter criteria
-              </p>
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="px-6 py-3 rounded-xl font-bold transition-all duration-300 hover:scale-105"
-                style={{
-                  background: 'linear-gradient(135deg, #004A98 0%, #0066CC 100%)',
-                  color: '#ffffff'
-                }}
-              >
-                Add Your First Unit
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {activeTab === "analytics" && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Usage Analytics */}
-          <div className="rounded-2xl p-8" style={cardStyle}>
-            <div className="flex items-center gap-3 mb-6">
-              <BarChart3 className="w-8 h-8" style={{ color: '#004A98' }} />
-              <h3 className="text-2xl font-bold" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
-                Usage Analytics
-              </h3>
-            </div>
-            <div className="space-y-6">
-              {starbooksInventory.map((item) => (
-                <div key={item.id} className="p-4 rounded-xl" style={{ background: darkMode ? '#1e293b' : '#f8fafc' }}>
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="font-bold" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
-                      {item.location}
-                    </span>
-                    <span className="text-sm" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
-                      {item.monthlyUsage} sessions
-                    </span>
-                  </div>
-                  <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: darkMode ? '#334155' : '#e2e8f0' }}>
-                    <div 
-                      className="h-full rounded-full transition-all duration-1000"
-                      style={{
-                        width: `${Math.min((item.monthlyUsage / 1500) * 100, 100)}%`,
-                        background: 'linear-gradient(90deg, #004A98, #10b981)'
-                      }}
-                    ></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Performance Metrics */}
-          <div className="rounded-2xl p-8" style={cardStyle}>
-            <div className="flex items-center gap-3 mb-6">
-              <TrendingUp className="w-8 h-8" style={{ color: '#10b981' }} />
-              <h3 className="text-2xl font-bold" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
-                Performance Metrics
-              </h3>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-6 rounded-xl" style={{ background: darkMode ? '#1e293b' : '#f8fafc' }}>
-                <div className="text-3xl font-bold mb-2" style={{ color: '#004A98' }}>
-                  {(starbooksInventory.reduce((sum, item) => sum + item.uptime, 0) / starbooksInventory.length).toFixed(1)}%
-                </div>
-                <div className="text-sm" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
-                  Average Uptime
-                </div>
-              </div>
-              <div className="text-center p-6 rounded-xl" style={{ background: darkMode ? '#1e293b' : '#f8fafc' }}>
-                <div className="text-3xl font-bold mb-2" style={{ color: '#10b981' }}>
-                  {(starbooksInventory.reduce((sum, item) => sum + item.rating, 0) / starbooksInventory.length).toFixed(1)}
-                </div>
-                <div className="text-sm" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
-                  Average Rating
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {activeTab === "maintenance" && (
-        <div className="rounded-2xl p-8" style={cardStyle}>
-          <div className="flex items-center gap-3 mb-6">
-            <Settings className="w-8 h-8" style={{ color: '#f59e0b' }} />
-            <h3 className="text-2xl font-bold" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
-              Maintenance Center
-            </h3>
-          </div>
-          <div className="space-y-4">
-            {starbooksInventory.map((item) => (
-              <div key={item.id} className="p-6 rounded-xl border-l-4" style={{ 
-                background: darkMode ? '#1e293b' : '#f8fafc',
-                borderColor: getStatusColor(item.status)
-              }}>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="font-bold mb-1" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
-                      {item.location}
-                    </h4>
-                    <p className="text-sm mb-2" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
-                      Last Maintenance: {new Date(item.lastMaintenance).toLocaleDateString()}
-                    </p>
-                    <p className="text-xs" style={{ color: darkMode ? '#64748b' : '#94a3b8' }}>
-                      {item.notes}
-                    </p>
-                  </div>
-                  <span 
-                    className="px-3 py-1 rounded-full text-xs font-bold"
-                    style={{ 
-                      background: `${getStatusColor(item.status)}20`, 
-                      color: getStatusColor(item.status) 
-                    }}
-                  >
-                    {item.status}
-                  </span>
-                </div>
-              </div>
-            ))}
+            )))}
           </div>
         </div>
       )}
@@ -831,7 +907,7 @@ export const StarbooksPage = ({ darkMode }) => {
       {showAddModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9998] p-4 animate-backdrop-fade-in">
           <div 
-            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl animate-modal-slide-in"
+            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl animate-modal-fade-in"
             style={{
               ...cardStyle,
               boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1)'
@@ -958,7 +1034,7 @@ export const StarbooksPage = ({ darkMode }) => {
               {/* Unit Configuration */}
               <div className="space-y-4">
                 <h3 className="text-lg font-bold flex items-center gap-2" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
-                  <Settings className="w-5 h-5" style={{ color: '#004A98' }} />
+                  <Package className="w-5 h-5" style={{ color: '#004A98' }} />
                   Unit Configuration
                 </h3>
                 
@@ -1139,7 +1215,7 @@ export const StarbooksPage = ({ darkMode }) => {
       {showDetailModal && selectedItem && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9997] p-4 animate-backdrop-fade-in">
           <div 
-            className="w-full max-w-7xl max-h-[95vh] overflow-hidden rounded-3xl animate-modal-zoom-in"
+            className="w-full max-w-7xl max-h-[95vh] overflow-hidden rounded-3xl animate-modal-fade-in"
             style={{
               ...cardStyle,
               boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1)'
@@ -1320,7 +1396,7 @@ export const StarbooksPage = ({ darkMode }) => {
                   {/* Usage Statistics */}
                   <div>
                     <h4 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
-                      <BarChart3 className="w-5 h-5" style={{ color: '#004A98' }} />
+                      <Activity className="w-5 h-5" style={{ color: '#004A98' }} />
                       Usage Statistics
                     </h4>
                     <div className="space-y-4">

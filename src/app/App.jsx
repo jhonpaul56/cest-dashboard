@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { Sidebar } from "../components/layout/Sidebar";
+import { StarbooksSidebar } from "../components/layout/StarbooksSidebar";
 import { TopBar } from "../components/layout/TopBar";
 import { Toast } from "../components/ui/Toast";
 import { LoadingScreen } from "../components/ui/LoadingScreen";
@@ -20,6 +21,38 @@ import { useToastNotification } from "../shared/hooks/useToastNotification";
 import { LS_KEYS } from "../shared/constants";
 import { INITIAL_PROJECTS, INITIAL_EQUIPMENT } from "../shared/utils/Utils";
 
+// Default notifications
+const DEFAULT_NOTIFICATIONS = [
+  {
+    id: 1,
+    title: "New Project Added",
+    message: "A new CEST 2.0 project has been added in Gonzaga",
+    time: "5 minutes ago",
+    read: false,
+    type: "success"
+  },
+  {
+    id: 2,
+    title: "Budget Update",
+    message: "Total budget has reached ₱1.4M across all municipalities",
+    time: "1 hour ago",
+    read: false,
+    type: "info"
+  },
+  {
+    id: 3,
+    title: "Training Scheduled",
+    message: "Community training scheduled for next week in Peñablanca",
+    time: "3 hours ago",
+    read: true,
+    type: "warning"
+  }
+];
+
+// Auto-logout configuration
+const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+const ACTIVITY_EVENTS = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+
 function AppContent() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
@@ -27,35 +60,11 @@ function AppContent() {
   const [projects, setProjects] = usePersistedState(LS_KEYS.projects, INITIAL_PROJECTS);
   const [equipment, setEquipment] = usePersistedState(LS_KEYS.equipment, INITIAL_EQUIPMENT);
   const [archivedProjects, setArchivedProjects] = usePersistedState("cest_archived_projects", []);
-  const [notifications, setNotifications] = usePersistedState(LS_KEYS.notifications, [
-    {
-      id: 1,
-      title: "New Project Added",
-      message: "A new CEST 2.0 project has been added in Gonzaga",
-      time: "5 minutes ago",
-      read: false,
-      type: "success"
-    },
-    {
-      id: 2,
-      title: "Budget Update",
-      message: "Total budget has reached ₱1.4M across all municipalities",
-      time: "1 hour ago",
-      read: false,
-      type: "info"
-    },
-    {
-      id: 3,
-      title: "Training Scheduled",
-      message: "Community training scheduled for next week in Peñablanca",
-      time: "3 hours ago",
-      read: true,
-      type: "warning"
-    }
-  ]);
+  const [notifications, setNotifications] = usePersistedState(LS_KEYS.notifications, DEFAULT_NOTIFICATIONS);
   const [darkMode, setDarkMode] = usePersistedState("darkMode", false);
 
   const [activePage, setActivePage] = useState("dashboard");
+  const [activeSystem, setActiveSystem] = usePersistedState("active_system", "cest"); // "cest" or "starbooks"
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showNotifs, setShowNotifs] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -63,11 +72,26 @@ function AppContent() {
 
   const { toasts, success, warning, removeToast } = useToastNotification();
 
-  // Auto-logout after 30 minutes of inactivity
+  // Handle system switching
+  const handleSwitchSystem = () => {
+    const newSystem = activeSystem === "cest" ? "starbooks" : "cest";
+    setActiveSystem(newSystem);
+    
+    if (newSystem === "starbooks") {
+      setActivePage("starbooks");
+      navigate("/starbooks");
+      success("Switched to STARBOOKS system");
+    } else {
+      setActivePage("dashboard");
+      navigate("/dashboard");
+      success("Switched to CEST system");
+    }
+  };
+
+  // Auto-logout functionality
   useEffect(() => {
     if (!isLoggedIn) return;
 
-    const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds
     let inactivityTimer;
 
     const resetTimer = () => {
@@ -79,20 +103,15 @@ function AppContent() {
       }, INACTIVITY_TIMEOUT);
     };
 
-    // Events that indicate user activity
-    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
-    
-    events.forEach(event => {
+    ACTIVITY_EVENTS.forEach(event => {
       document.addEventListener(event, resetTimer);
     });
 
-    // Initialize timer
     resetTimer();
 
-    // Cleanup
     return () => {
       clearTimeout(inactivityTimer);
-      events.forEach(event => {
+      ACTIVITY_EVENTS.forEach(event => {
         document.removeEventListener(event, resetTimer);
       });
     };
@@ -148,8 +167,7 @@ function AppContent() {
       // Remove from archive
       setArchivedProjects(archivedProjects.filter(p => p.id !== projectId));
       // Note: In a real app, you'd add back to projects here
-      // For now, just show a toast notification
-      console.log("Project restored:", projectToRestore);
+      success(`Project "${projectToRestore.project}" restored successfully!`);
     }
   };
 
@@ -193,19 +211,38 @@ function AppContent() {
         />
       ))}
 
-      <Sidebar
-        activePage={activePage}
-        setActivePage={setActivePage}
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        darkMode={darkMode}
-        isCollapsed={isCollapsed}
-        setIsCollapsed={setIsCollapsed}
-        onLogout={() => {
-          setIsLoggedIn(false);
-          navigate("/");
-        }}
-      />
+      {/* Conditional Sidebar based on active system */}
+      {activeSystem === "starbooks" ? (
+        <StarbooksSidebar
+          activePage={activePage}
+          setActivePage={setActivePage}
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+          darkMode={darkMode}
+          isCollapsed={isCollapsed}
+          setIsCollapsed={setIsCollapsed}
+          onSwitchSystem={handleSwitchSystem}
+          onLogout={() => {
+            setIsLoggedIn(false);
+            navigate("/");
+          }}
+        />
+      ) : (
+        <Sidebar
+          activePage={activePage}
+          setActivePage={setActivePage}
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+          darkMode={darkMode}
+          isCollapsed={isCollapsed}
+          setIsCollapsed={setIsCollapsed}
+          onSwitchSystem={handleSwitchSystem}
+          onLogout={() => {
+            setIsLoggedIn(false);
+            navigate("/");
+          }}
+        />
+      )}
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <TopBar
@@ -219,7 +256,7 @@ function AppContent() {
           projects={projects}
           onNavigateToProject={(project) => {
             setActivePage("dashboard");
-            console.log("Navigate to project:", project);
+            // Navigate to project details if needed
           }}
         />
 
@@ -237,7 +274,9 @@ function AppContent() {
             <Route
               path="/dashboard"
               element={
-                activePage === "dashboard" ? (
+                activeSystem === "starbooks" ? (
+                  <Navigate to="/starbooks" replace />
+                ) : activePage === "dashboard" ? (
                   <Dashboard 
                     projects={projects} 
                     equipment={equipment} 
@@ -264,7 +303,7 @@ function AppContent() {
                     darkMode={darkMode}
                   />
                 ) : activePage === "starbooks" ? (
-                  <StarbooksPage darkMode={darkMode} />
+                  <StarbooksPage darkMode={darkMode} activePage={activePage} />
                 ) : (
                   <PlaceholderPage activePage={activePage} darkMode={darkMode} />
                 )
@@ -311,7 +350,7 @@ function AppContent() {
             />
             <Route
               path="/starbooks"
-              element={<StarbooksPage darkMode={darkMode} />}
+              element={<StarbooksPage darkMode={darkMode} activePage={activePage} />}
             />
           </Routes>
         </main>
@@ -448,7 +487,6 @@ function PlaceholderPage({ activePage, darkMode }) {
             {activePage === "projects" && "📁"}
             {activePage === "starbooks" && "📚"}
             {activePage === "trainings" && "🎓"}
-            {activePage === "kpireports" && "📊"}
           </span>
         </div>
         <h2 className="text-3xl font-bold mb-3 gradient-text">
@@ -456,7 +494,6 @@ function PlaceholderPage({ activePage, darkMode }) {
           {activePage === "projects" && "Projects"}
           {activePage === "starbooks" && "Starbooks"}
           {activePage === "trainings" && "Trainings"}
-          {activePage === "kpireports" && "KPI Reports"}
         </h2>
         <p className="font-medium mb-4" style={{ color: darkMode ? '#94a3b8' : '#475569' }}>
           This feature is coming soon
