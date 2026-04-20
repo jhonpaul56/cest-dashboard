@@ -6,18 +6,22 @@ import { fmt } from "../../shared/utils/helpers";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { COMP_COLORS } from "../../shared/constants";
 import { getProvinceById, getMunicipalitiesByProvince } from "../../shared/data/regionII";
+import { transformProjects } from "../../shared/utils/dataTransform";
 
 export const CitiesPage = ({ projects, darkMode }) => {
   const navigate = useNavigate();
   const { provinceId } = useParams();
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Transform projects data to handle Supabase structure
+  const transformedProjects = transformProjects(projects);
+
   // Get province data from official structure
   const province = getProvinceById(provinceId);
   const provinceName = province ? province.name : provinceId;
   const officialMunicipalities = province ? getMunicipalitiesByProvince(provinceId) : [];
 
-  const provinceProjects = projects.filter(
+  const provinceProjects = transformedProjects.filter(
     (p) => p.province?.toLowerCase() === provinceName.toLowerCase()
   );
 
@@ -44,7 +48,7 @@ export const CitiesPage = ({ projects, darkMode }) => {
         barangays,
       };
     })
-    .filter((c) => c.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    .filter((c) => c.name?.toLowerCase().includes(searchTerm.toLowerCase()));
 
   const chartData = cityData
     .filter((c) => c.totalBudget > 0)
@@ -62,11 +66,20 @@ export const CitiesPage = ({ projects, darkMode }) => {
 
   // Component distribution for this province
   const componentData = Object.keys(COMP_COLORS)
-    .map((key) => ({
-      name: key.toUpperCase(),
-      value: provinceProjects.filter((p) => p.components.includes(key)).length,
-      color: COMP_COLORS[key],
-    }))
+    .filter(key => key !== 'default') // Exclude default color
+    .map((key) => {
+      const count = provinceProjects.filter((p) => {
+        // Handle transformed components array
+        const components = p.components || [];
+        return components.includes(key.toLowerCase());
+      }).length;
+      
+      return {
+        name: key.toUpperCase(),
+        value: count,
+        color: COMP_COLORS[key],
+      };
+    })
     .filter((d) => d.value > 0);
 
   const cardStyle = {

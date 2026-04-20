@@ -44,14 +44,37 @@ export const TopBar = ({
       : '0 4px 12px rgba(217, 119, 6, 0.3)'
   };
 
-  const filteredProjects = projects.filter(p => 
-    searchQuery.length > 0 && (
-      p.project?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.municipality?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.community?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.year?.toString().includes(searchQuery)
-    )
-  );
+  const filteredProjects = (() => {
+    try {
+      return projects.filter(p => {
+        if (searchQuery.length === 0) return false;
+        
+        const query = searchQuery.toLowerCase();
+        
+        // Safely check project name
+        const projectMatch = p.project?.toLowerCase().includes(query);
+        
+        // Safely check municipality (handle both string and object formats)
+        let municipalityMatch = false;
+        if (typeof p.municipality === 'string') {
+          municipalityMatch = p.municipality.toLowerCase().includes(query);
+        } else if (p.municipality?.name) {
+          municipalityMatch = p.municipality.name.toLowerCase().includes(query);
+        }
+        
+        // Safely check community
+        const communityMatch = p.community?.toLowerCase().includes(query);
+        
+        // Safely check year
+        const yearMatch = p.year?.toString().includes(searchQuery);
+        
+        return projectMatch || municipalityMatch || communityMatch || yearMatch;
+      });
+    } catch (error) {
+      console.error('Search filter error:', error);
+      return [];
+    }
+  })();
 
   const handleSearchClick = () => {
     setShowSearch(true);
@@ -357,7 +380,7 @@ export const TopBar = ({
                                 className="text-sm font-semibold"
                                 style={{ color: darkMode ? '#cbd5e1' : '#475569' }}
                               >
-                                📍 {project.municipality}
+                                📍 {typeof project.municipality === 'string' ? project.municipality : project.municipality?.name || 'Unknown'}
                               </span>
                               {project.community && (
                                 <>

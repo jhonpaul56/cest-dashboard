@@ -1,15 +1,53 @@
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, AlertCircle, X } from "lucide-react";
+import { useAuth } from "../../shared/hooks/useAuth.jsx";
+import dostLogo from "../../dost logo.png";
 
-export const LoginPage = ({ onLogin, darkMode, setDarkMode }) => {
-  const [isSignUp, setIsSignUp] = useState(false);
+export const LoginPage = ({ darkMode, setDarkMode }) => {
+  const { signIn, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [isShaking, setIsShaking] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onLogin();
+    setError("");
+    
+    try {
+      await signIn(email, password);
+      // Navigation will be handled by the auth state change
+    } catch (err) {
+      console.error('Login error:', err);
+      
+      // Trigger shake animation
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 600);
+      
+      // Handle specific error messages
+      let errorMessage = 'Failed to sign in';
+      
+      if (err.message?.includes('Invalid login credentials') || 
+          err.message?.includes('invalid_credentials') ||
+          err.message?.includes('Invalid email or password')) {
+        errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+      } else if (err.message?.includes('Email not confirmed')) {
+        errorMessage = 'Please check your email and confirm your account before signing in.';
+      } else if (err.message?.includes('Too many requests')) {
+        errorMessage = 'Too many login attempts. Please wait a moment and try again.';
+      } else if (err.message?.includes('User not found') || 
+                 err.message?.includes('user_not_found')) {
+        errorMessage = 'No account found with this email address.';
+      } else if (err.message?.includes('network') || 
+                 err.message?.includes('fetch')) {
+        errorMessage = 'Network error. Please check your connection and try again.';
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
+    }
   };
 
   const cardStyles = {
@@ -68,7 +106,10 @@ export const LoginPage = ({ onLogin, darkMode, setDarkMode }) => {
       }} />
 
       <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-6 items-center relative z-10">
-        <div className="rounded-3xl p-6 lg:p-8 animate-fade-in" style={cardStyles}>
+        <div 
+          className={`rounded-3xl p-6 lg:p-8 animate-fade-in ${isShaking ? 'animate-shake' : ''}`} 
+          style={cardStyles}
+        >
           <div className="mb-6">
             <div className="flex items-center gap-3 mb-4">
               <div 
@@ -79,7 +120,7 @@ export const LoginPage = ({ onLogin, darkMode, setDarkMode }) => {
                 }}
               >
                 <img 
-                  src="https://caraga.dost.gov.ph/wp-content/uploads/2020/10/dostlogo.png" 
+                  src={dostLogo} 
                   alt="DOST Logo" 
                   className="w-6 h-6 object-contain" 
                 />
@@ -95,43 +136,79 @@ export const LoginPage = ({ onLogin, darkMode, setDarkMode }) => {
             </div>
 
             <h1 className="text-2xl font-bold mb-1" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
-              Welcome to CEST 2.0
+              Welcome Back
             </h1>
             <p className="text-xs" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
-              Start your experience with CEST by signing in or signing up.
+              Sign in to access your CEST 2.0 dashboard
             </p>
           </div>
 
-          <div className="flex gap-2 mb-5">
-            <button
-              onClick={() => setIsSignUp(false)}
-              className="flex-1 py-2.5 px-6 rounded-xl font-semibold text-sm transition-all duration-200 hover:scale-[1.01]"
-              style={{
-                background: !isSignUp 
-                  ? (darkMode ? 'rgba(30, 41, 59, 0.6)' : 'rgba(241, 245, 249, 0.8)')
-                  : 'transparent',
-                color: darkMode ? '#f8fafc' : '#0f172a',
-                border: `1px solid ${darkMode ? 'rgba(51, 65, 85, 0.6)' : 'rgba(226, 232, 240, 0.8)'}`
-              }}
-            >
-              Sign In
-            </button>
-            <button
-              onClick={() => setIsSignUp(true)}
-              className="flex-1 py-2.5 px-6 rounded-xl font-semibold text-sm transition-all duration-200 hover:scale-[1.01]"
-              style={{
-                background: isSignUp 
-                  ? (darkMode ? 'rgba(30, 41, 59, 0.6)' : 'rgba(241, 245, 249, 0.8)')
-                  : 'transparent',
-                color: darkMode ? '#f8fafc' : '#0f172a',
-                border: `1px solid ${darkMode ? 'rgba(51, 65, 85, 0.6)' : 'rgba(226, 232, 240, 0.8)'}`
-              }}
-            >
-              Sign Up
-            </button>
-          </div>
-
           <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div 
+                className="p-4 rounded-xl border transition-all duration-300 animate-slide-down relative overflow-hidden" 
+                style={{
+                  backgroundColor: darkMode ? 'rgba(239, 68, 68, 0.1)' : '#fef2f2',
+                  borderColor: darkMode ? 'rgba(239, 68, 68, 0.3)' : '#fecaca',
+                  color: darkMode ? '#fca5a5' : '#dc2626',
+                  boxShadow: darkMode 
+                    ? '0 8px 25px rgba(239, 68, 68, 0.2)' 
+                    : '0 8px 25px rgba(220, 38, 38, 0.15)'
+                }}
+              >
+                {/* Animated background pulse */}
+                <div 
+                  className="absolute inset-0 opacity-10 animate-pulse-slow"
+                  style={{
+                    background: 'linear-gradient(45deg, transparent 30%, rgba(239, 68, 68, 0.3) 50%, transparent 70%)',
+                    backgroundSize: '200% 200%',
+                    animation: 'gradient-shift 3s ease-in-out infinite'
+                  }}
+                />
+                
+                <div className="flex items-start gap-3 relative z-10">
+                  <div className="flex-shrink-0">
+                    <div 
+                      className="w-8 h-8 rounded-full flex items-center justify-center animate-bounce-slow"
+                      style={{
+                        background: darkMode ? 'rgba(239, 68, 68, 0.2)' : 'rgba(220, 38, 38, 0.1)',
+                        border: `1px solid ${darkMode ? 'rgba(239, 68, 68, 0.4)' : 'rgba(220, 38, 38, 0.2)'}`
+                      }}
+                    >
+                      <AlertCircle className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-sm font-bold">Authentication Failed</p>
+                      <button
+                        onClick={() => setError("")}
+                        className="p-1 rounded-lg transition-all duration-200 hover:scale-110 hover:bg-red-500/20"
+                        style={{ color: darkMode ? '#fca5a5' : '#dc2626' }}
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                    <p className="text-xs leading-relaxed opacity-90">{error}</p>
+                    
+                    {/* Progress bar animation */}
+                    <div className="mt-3 h-1 rounded-full overflow-hidden" style={{
+                      background: darkMode ? 'rgba(239, 68, 68, 0.2)' : 'rgba(220, 38, 38, 0.1)'
+                    }}>
+                      <div 
+                        className="h-full rounded-full animate-progress"
+                        style={{
+                          background: darkMode ? '#fca5a5' : '#dc2626',
+                          width: '0%',
+                          animation: 'progress-fill 2s ease-out forwards'
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <div>
               <label className="block text-xs font-semibold mb-1.5" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
                 Email Address <span style={{ color: '#dc2626' }}>*</span>
@@ -147,15 +224,17 @@ export const LoginPage = ({ onLogin, darkMode, setDarkMode }) => {
                   onFocus={(e) => {
                     e.target.style.borderColor = '#004A98';
                     e.target.style.boxShadow = '0 0 0 3px rgba(0, 74, 152, 0.08)';
+                    e.target.style.transform = 'scale(1.01)';
                   }}
                   onBlur={(e) => {
                     e.target.style.borderColor = darkMode ? 'rgba(51, 65, 85, 0.6)' : 'rgba(226, 232, 240, 0.8)';
                     e.target.style.boxShadow = 'none';
+                    e.target.style.transform = 'scale(1)';
                   }}
                   required
                 />
                 <svg 
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" 
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-all duration-200" 
                   style={{ color: darkMode ? '#64748b' : '#94a3b8' }}
                   fill="none" 
                   stroke="currentColor" 
@@ -181,15 +260,17 @@ export const LoginPage = ({ onLogin, darkMode, setDarkMode }) => {
                   onFocus={(e) => {
                     e.target.style.borderColor = '#004A98';
                     e.target.style.boxShadow = '0 0 0 3px rgba(0, 74, 152, 0.08)';
+                    e.target.style.transform = 'scale(1.01)';
                   }}
                   onBlur={(e) => {
                     e.target.style.borderColor = darkMode ? 'rgba(51, 65, 85, 0.6)' : 'rgba(226, 232, 240, 0.8)';
                     e.target.style.boxShadow = 'none';
+                    e.target.style.transform = 'scale(1)';
                   }}
                   required
                 />
                 <svg 
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" 
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-all duration-200" 
                   style={{ color: darkMode ? '#64748b' : '#94a3b8' }}
                   fill="none" 
                   stroke="currentColor" 
@@ -210,15 +291,35 @@ export const LoginPage = ({ onLogin, darkMode, setDarkMode }) => {
 
             <button
               type="submit"
-              className="w-full py-3 px-6 rounded-xl font-bold text-sm text-white transition-all duration-200 hover:shadow-xl active:scale-[0.98]"
+              disabled={loading}
+              className="w-full py-3 px-6 rounded-xl font-bold text-sm text-white transition-all duration-200 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group"
               style={{
                 background: 'linear-gradient(135deg, #004A98 0%, #0066CC 100%)',
                 boxShadow: '0 4px 16px rgba(0, 74, 152, 0.3)'
               }}
             >
-              {isSignUp ? 'Sign Up' : 'Sign In'}
+              {/* Button shine effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-20 transition-opacity duration-500 transform -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%]" />
+              
+              {loading ? (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span className="animate-pulse">Signing In...</span>
+                </div>
+              ) : (
+                <span className="relative z-10">Sign In</span>
+              )}
             </button>
           </form>
+
+          <div className="mt-6 text-center">
+            <p className="text-xs mb-2" style={{ color: darkMode ? '#64748b' : '#94a3b8' }}>
+              Need help accessing your account?
+            </p>
+            <p className="text-xs" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
+              Contact your system administrator for assistance
+            </p>
+          </div>
 
           <p className="text-center text-[10px] mt-6" style={{ color: darkMode ? '#475569' : '#94a3b8' }}>
             Copyright © CEST 2.0, All Right Reserved · Terms & Condition · Privacy & Policy
@@ -433,10 +534,60 @@ export const LoginPage = ({ onLogin, darkMode, setDarkMode }) => {
           to { opacity: 1; transform: translateY(0); }
         }
         
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+          20%, 40%, 60%, 80% { transform: translateX(8px); }
+        }
+        
+        @keyframes slideDown {
+          from { 
+            opacity: 0; 
+            transform: translateY(-20px) scale(0.95); 
+          }
+          to { 
+            opacity: 1; 
+            transform: translateY(0) scale(1); 
+          }
+        }
+        
+        @keyframes bounceGentle {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-4px); }
+        }
+        
+        @keyframes gradientShift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes progressFill {
+          from { width: 0%; }
+          to { width: 100%; }
+        }
+        
         .animate-fade-in {
           animation: fadeIn 0.4s ease-out;
+        }
+        
+        .animate-shake {
+          animation: shake 0.6s ease-in-out;
+        }
+        
+        .animate-slide-down {
+          animation: slideDown 0.3s ease-out;
+        }
+        
+        .animate-bounce-slow {
+          animation: bounceGentle 2s ease-in-out infinite;
+        }
+        
+        .animate-pulse-slow {
+          animation: pulse 3s ease-in-out infinite;
         }
       `}</style>
     </div>
   );
 };
+

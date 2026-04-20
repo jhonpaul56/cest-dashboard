@@ -17,6 +17,9 @@ import {
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { COMPONENTS } from "../../shared/constants";
+import dostLogo from "../../dost logo.png";
+import cestLogo from "../../Cest Logo.png";
+import starbooksLogo from "../../starbooks logo.png";
 
 const NAV_ITEMS = [
   { id: "dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -33,6 +36,7 @@ const ROUTES = {
   monitoring: "/monitoring",
   archive: "/archive",
   dataentry: "/dataentry",
+  trainings: "/trainings",
   starbooks: "/starbooks",
 };
 
@@ -156,7 +160,7 @@ export const Sidebar = ({
                 }}
               >
                 <img 
-                  src="/src/dost logo.png" 
+                  src={dostLogo} 
                   alt="DOST Logo" 
                   className="w-full h-full object-contain" 
                 />
@@ -200,7 +204,7 @@ export const Sidebar = ({
                   }}
                 >
                   <img 
-                    src="/src/Cest Logo.png" 
+                    src={cestLogo} 
                     alt="DOST Logo" 
                     className="w-full h-full object-contain" 
                   />
@@ -237,7 +241,7 @@ export const Sidebar = ({
                 }}
               >
                 <img 
-                  src="/src/Cest Logo.png" 
+                  src={cestLogo} 
                   alt="DOST Logo" 
                   className="w-full h-full object-contain" 
                 />
@@ -377,7 +381,7 @@ export const Sidebar = ({
                     }}
                   >
                     <img 
-                      src="/src/starbooks logo.png" 
+                      src={starbooksLogo} 
                       alt="STARBOOKS Logo" 
                       className="w-full h-full object-contain relative z-10" 
                     />
@@ -642,7 +646,7 @@ export const Sidebar = ({
                       }}
                     >
                       <img 
-                        src="/src/starbooks logo.png" 
+                        src={starbooksLogo} 
                         alt="STARBOOKS Logo" 
                         className="w-full h-full object-contain relative z-10" 
                       />
@@ -794,7 +798,7 @@ export const Sidebar = ({
                         }}
                       >
                         <img 
-                          src="/src/starbooks logo.png" 
+                          src={starbooksLogo} 
                           alt="STARBOOKS" 
                           className="w-full h-full object-contain" 
                         />
@@ -881,3 +885,4 @@ export const Sidebar = ({
     </>
   );
 };
+

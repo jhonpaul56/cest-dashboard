@@ -5,6 +5,7 @@ import { Breadcrumb } from "../../components/layout/Breadcrumb";
 import { fmt } from "../../shared/utils/helpers";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { getAllProvinces } from "../../shared/data/regionII";
+import { transformProjects } from "../../shared/utils/dataTransform";
 
 const CHART_COLORS = ["#004A98", "#0066CC", "#3b82f6", "#8b5cf6", "#10b981"];
 
@@ -61,6 +62,9 @@ export const ProvincesPage = ({ projects, darkMode }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [lastUpdate, setLastUpdate] = useState(new Date());
 
+  // Transform projects data to handle Supabase structure
+  const transformedProjects = transformProjects(projects);
+
   // Simulate real-time updates
   useEffect(() => {
     const interval = setInterval(() => {
@@ -75,7 +79,7 @@ export const ProvincesPage = ({ projects, darkMode }) => {
 
   // Calculate province-level data
   const provinceData = REGION_II_PROVINCES.map((province) => {
-    const provinceProjects = projects.filter(
+    const provinceProjects = transformedProjects.filter(
       (p) => p.province?.toLowerCase() === province.name.toLowerCase()
     );
     

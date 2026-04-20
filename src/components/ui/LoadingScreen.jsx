@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import dostLogo from "../../dost logo.png";
 
 const LOADING_STAGES = [
   "Initializing System...",
@@ -13,24 +14,48 @@ export const LoadingScreen = ({ onComplete, darkMode }) => {
   const [stage, setStage] = useState(0);
 
   useEffect(() => {
-    const progressInterval = setInterval(() => {
+    let progressInterval;
+    let stageInterval;
+    let completed = false;
+
+    const completeLoading = () => {
+      if (!completed) {
+        completed = true;
+        console.log('LoadingScreen: Completing loading...');
+        setTimeout(() => {
+          if (onComplete) {
+            console.log('LoadingScreen: Calling onComplete callback');
+            onComplete();
+          }
+        }, 500);
+      }
+    };
+
+    progressInterval = setInterval(() => {
       setProgress(prev => {
         if (prev >= 100) {
           clearInterval(progressInterval);
-          setTimeout(onComplete, 500);
+          completeLoading();
           return 100;
         }
         return prev + 2;
       });
     }, 50);
 
-    const stageInterval = setInterval(() => {
+    stageInterval = setInterval(() => {
       setStage(prev => (prev + 1) % LOADING_STAGES.length);
     }, 1000);
+
+    // Failsafe: Force completion after 8 seconds
+    const failsafeTimeout = setTimeout(() => {
+      console.warn('LoadingScreen: Failsafe timeout triggered, forcing completion');
+      completeLoading();
+    }, 8000);
 
     return () => {
       clearInterval(progressInterval);
       clearInterval(stageInterval);
+      clearTimeout(failsafeTimeout);
     };
   }, [onComplete]);
 
@@ -75,7 +100,7 @@ export const LoadingScreen = ({ onComplete, darkMode }) => {
             style={logoStyle}
           >
             <img 
-              src="https://caraga.dost.gov.ph/wp-content/uploads/2020/10/dostlogo.png" 
+              src={dostLogo} 
               alt="DOST Logo" 
               className="w-16 h-16 object-contain relative z-10"
               style={{ filter: 'drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2))' }}
@@ -133,3 +158,4 @@ export const LoadingScreen = ({ onComplete, darkMode }) => {
     </div>
   );
 };
+

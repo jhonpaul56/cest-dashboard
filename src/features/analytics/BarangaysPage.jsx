@@ -15,6 +15,7 @@ import { Breadcrumb } from "../../components/layout/Breadcrumb";
 import { fmt } from "../../shared/utils/helpers";
 import { COMP_COLORS } from "../../shared/constants";
 import { getProvinceById } from "../../shared/data/regionII";
+import { transformProjects } from "../../shared/utils/dataTransform";
 
 // ── Inline helpers ────────────────────────────────────────────────────
 
@@ -28,15 +29,19 @@ export const BarangaysPage = ({ projects, darkMode }) => {
   const { provinceId, cityName } = useParams();
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Transform projects data to handle Supabase structure
+  const transformedProjects = transformProjects(projects);
+
   // Get province data from official structure
   const province = getProvinceById(provinceId);
   const provinceName = province ? province.name : provinceId;
   const decodedCityName = decodeURIComponent(cityName);
 
-  const cityProjects = (projects || []).filter(
-    (p) =>
-      p.province?.toLowerCase() === provinceName.toLowerCase() &&
-      p.municipality === decodedCityName
+  const cityProjects = transformedProjects.filter(
+    (p) => {
+      return p.province?.toLowerCase() === provinceName.toLowerCase() &&
+             p.municipality === decodedCityName;
+    }
   );
 
   const barangays = Array.from(new Set(cityProjects.map((p) => p.community)))
@@ -451,26 +456,25 @@ export const BarangaysPage = ({ projects, darkMode }) => {
                           {project.project}
                         </h4>
                         <div className="flex items-center gap-2 flex-wrap">
-                          {(project.components || []).map((c) => (
-                            <span
-                              key={c}
-                              className="text-xs font-medium px-2 py-1 rounded"
-                              style={{
-                                backgroundColor: `${getCompColor(c)}20`,
-                                color: getCompColor(c),
-                              }}
-                            >
-                              {c.toUpperCase()}
-                            </span>
-                          ))}
+                          {(project.components || [])
+                            .filter(Boolean)
+                            .map((componentCode, compIndex) => (
+                              <span
+                                key={`${project.id}-comp-${compIndex}-${componentCode}`}
+                                className="text-xs font-medium px-2 py-1 rounded"
+                                style={{
+                                  backgroundColor: `${getCompColor(componentCode)}20`,
+                                  color: getCompColor(componentCode),
+                                }}
+                              >
+                                {componentCode?.toUpperCase() || 'N/A'}
+                              </span>
+                            ))}
                         </div>
                       </div>
                       <div className="text-right">
-                        <p
-                          className="text-lg font-semibold"
-                          style={{ color: "#10b981" }}
-                        >
-                          {fmt(project.amountFunded)}
+                        <p className="text-lg font-semibold" style={{ color: "#10b981" }}>
+                          {fmt(project.amountFunded || 0)}
                         </p>
                       </div>
                     </div>

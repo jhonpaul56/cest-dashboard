@@ -1,12 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BookOpen, MapPin, Users, Plus, Search, Filter, Edit, Trash2, Eye, Package, CheckCircle, Clock, Phone, X, Calendar, Monitor, Tablet, Activity, Download, RefreshCw, Star } from "lucide-react";
 import { DocumentationPage } from "./DocumentationPage";
+import { supabase } from "../../shared/services/supabaseClient";
+import { ConfirmDeleteModal } from "../../components/ui/ConfirmDeleteModal";
 
 export const StarbooksPage = ({ darkMode, activePage = "starbooks" }) => {
   const [activeTab, setActiveTab] = useState("inventory");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [showAddModal, setShowAddModal] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(null); // { id, name }
   const [selectedItem, setSelectedItem] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
@@ -35,8 +38,28 @@ export const StarbooksPage = ({ darkMode, activePage = "starbooks" }) => {
     contactPerson: "",
     contactPhone: "",
     contactEmail: "",
-    notes: ""
+    notes: "",
+    imageFile: null,
+    imagePreview: null,
   });
+
+  // Load from Supabase on mount
+  useEffect(() => {
+    loadUnits();
+  }, []);
+
+  const loadUnits = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('starbooks_units')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      if (data && data.length > 0) setStarbooksInventory(data);
+    } catch (err) {
+      console.error('Error loading STARBOOKS units:', err);
+    }
+  };
 
   // Enhanced STARBOOKS inventory data with more visual appeal
   const [starbooksInventory, setStarbooksInventory] = useState([
@@ -246,55 +269,73 @@ export const StarbooksPage = ({ darkMode, activePage = "starbooks" }) => {
     }
 
     setIsSubmitting(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    const unitToAdd = {
-      ...newUnit,
-      id: `SB-${String(starbooksInventory.length + 1).padStart(3, '0')}`,
-      dateDeployed: new Date().toISOString().split('T')[0],
-      lastMaintenance: new Date().toISOString().split('T')[0],
-      beneficiaries: 0,
-      monthlyUsage: 0,
-      images: ["https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?w=800&h=600&fit=crop"],
-      specifications: {
-        kioskModel: "STARBOOKS Standard 2024",
-        laptopSpecs: "Intel i3, 4GB RAM, 128GB SSD",
-        tabletCount: 2,
-        solarCapacity: "300W Solar Panel System",
-        internetConnection: "DSL 25Mbps",
-        powerBackup: "UPS 1500VA"
-      },
-      usageStats: {
-        dailyAverage: 0,
-        peakHours: "N/A",
-        popularContent: [],
-        userDemographics: { students: 0, teachers: 0, researchers: 0, general: 0 }
-      },
-      maintenanceHistory: [
-        { date: new Date().toISOString().split('T')[0], type: "Initial Setup", technician: "System Admin", notes: "New unit deployment" }
-      ],
-      rating: 5.0,
-      uptime: 100
-    };
 
-    setStarbooksInventory([...starbooksInventory, unitToAdd]);
-    setNewUnit({
-      location: "",
-      municipality: "",
-      province: "Cagayan",
-      serialNumber: "",
-      status: "Active",
-      condition: "Excellent",
-      components: [],
-      contactPerson: "",
-      contactPhone: "",
-      contactEmail: "",
-      notes: ""
-    });
-    setIsSubmitting(false);
-    setShowAddModal(false);
+    try {
+      // Upload image if provided
+      let imageUrl = null;
+      if (newUnit.imageFile) {
+        const ext = newUnit.imageFile.name.split('.').pop();
+        const fileName = `${newUnit.serialNumber}-${Date.now()}.${ext}`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('starbooks-images')
+          .upload(fileName, newUnit.imageFile, { cacheControl: '3600', upsert: false });
+        if (!uploadError) {
+          const { data: urlData } = supabase.storage.from('starbooks-images').getPublicUrl(uploadData.path);
+          imageUrl = urlData.publicUrl;
+        }
+      }
+
+      const unitData = {
+        unit_code: newUnit.serialNumber,
+        location: newUnit.location,
+        municipality: newUnit.municipality,
+        province: newUnit.province,
+        status: newUnit.status,
+        notes: [
+          newUnit.notes,
+          newUnit.contactPerson ? `Contact: ${newUnit.contactPerson}` : '',
+          newUnit.contactPhone ? `Phone: ${newUnit.contactPhone}` : '',
+          newUnit.contactEmail ? `Email: ${newUnit.contactEmail}` : '',
+          newUnit.condition ? `Condition: ${newUnit.condition}` : '',
+          imageUrl ? `Image: ${imageUrl}` : '',
+        ].filter(Boolean).join(' | '),
+        installation_date: new Date().toISOString().split('T')[0],
+        total_users: 0,
+        total_sessions: 0,
+      };
+
+      const { data, error } = await supabase
+        .from('starbooks_units')
+        .insert([unitData])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Attach image URL for immediate display
+      setStarbooksInventory(prev => [{ ...data, _imageUrl: imageUrl }, ...prev]);
+    } catch (err) {
+      console.error('Error saving STARBOOKS unit:', err);
+      alert(`Failed to save: ${err.message}`);
+    } finally {
+      setNewUnit({
+        location: "",
+        municipality: "",
+        province: "Cagayan",
+        serialNumber: "",
+        status: "Active",
+        condition: "Excellent",
+        components: [],
+        contactPerson: "",
+        contactPhone: "",
+        contactEmail: "",
+        notes: "",
+        imageFile: null,
+        imagePreview: null,
+      });
+      setIsSubmitting(false);
+      setShowAddModal(false);
+    }
   };
 
   const handleDeleteUnit = (id) => {
@@ -302,10 +343,10 @@ export const StarbooksPage = ({ darkMode, activePage = "starbooks" }) => {
   };
 
   const filteredInventory = starbooksInventory.filter(item => {
-    const matchesSearch = item.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         item.municipality.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         item.serialNumber.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === "all" || item.status.toLowerCase() === statusFilter.toLowerCase();
+    const matchesSearch = (item.location || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         (item.municipality || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         (item.serialNumber || item.unit_code || '').toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === "all" || (item.status || '').toLowerCase() === statusFilter.toLowerCase();
     return matchesSearch && matchesStatus;
   });
 
@@ -319,7 +360,7 @@ export const StarbooksPage = ({ darkMode, activePage = "starbooks" }) => {
   };
 
   const getConditionColor = (condition) => {
-    switch (condition.toLowerCase()) {
+    switch ((condition || '').toLowerCase()) {
       case 'excellent': return '#10b981';
       case 'good': return '#3b82f6';
       case 'fair': return '#f59e0b';
@@ -378,12 +419,12 @@ export const StarbooksPage = ({ darkMode, activePage = "starbooks" }) => {
       trend: "-5%"
     },
     { 
-      label: "Total Beneficiaries", 
-      value: starbooksInventory.reduce((sum, s) => sum + s.beneficiaries, 0).toLocaleString(), 
+      label: "Total Sessions", 
+      value: starbooksInventory.reduce((sum, s) => sum + (s.total_sessions || 0), 0).toLocaleString(), 
       icon: Users, 
       color: "rgba(255, 255, 255, 0.95)",
       textColor: "#8b5cf6",
-      subtitle: "People served",
+      subtitle: "Total sessions",
       trend: "+23%"
     }
   ];
@@ -532,10 +573,10 @@ export const StarbooksPage = ({ darkMode, activePage = "starbooks" }) => {
                   </div>
                   <div>
                     <div className="text-2xl font-bold" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
-                      {starbooksInventory.reduce((sum, s) => sum + s.beneficiaries, 0).toLocaleString()}
+                      {starbooksInventory.reduce((sum, s) => sum + (s.total_sessions || 0), 0).toLocaleString()}
                     </div>
                     <div className="text-xs font-medium" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
-                      Beneficiaries
+                      Total Sessions
                     </div>
                   </div>
                 </div>
@@ -694,7 +735,7 @@ export const StarbooksPage = ({ darkMode, activePage = "starbooks" }) => {
                             {item.location}
                           </h3>
                           <p className="text-sm font-mono" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
-                            {item.serialNumber}
+                            {item.serialNumber || item.unit_code}
                           </p>
                         </div>
                         <div className="flex flex-col items-end gap-2">
@@ -753,7 +794,7 @@ export const StarbooksPage = ({ darkMode, activePage = "starbooks" }) => {
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-2">
-                          {item.components.map((component, idx) => (
+                          {(item.components || []).map((component, idx) => (
                             <span 
                               key={idx}
                               className="px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-300 hover:scale-105"
@@ -766,6 +807,9 @@ export const StarbooksPage = ({ darkMode, activePage = "starbooks" }) => {
                               ✓ {component}
                             </span>
                           ))}
+                          {(!item.components || item.components.length === 0) && (
+                            <span className="text-xs" style={{ color: darkMode ? '#475569' : '#94a3b8' }}>No components listed</span>
+                          )}
                         </div>
                       </div>
 
@@ -785,12 +829,12 @@ export const StarbooksPage = ({ darkMode, activePage = "starbooks" }) => {
                         }}>
                           <div className="flex items-center gap-2">
                             <Users className="w-4 h-4" style={{ color: '#8b5cf6' }} />
-                            <span className="font-semibold">{item.contactPerson}</span>
+                            <span className="font-semibold">{item.contactPerson || item.notes?.split('Contact: ')[1]?.split(' |')[0] || '—'}</span>
                           </div>
                           <span className="opacity-50">•</span>
                           <div className="flex items-center gap-2">
                             <Phone className="w-4 h-4" style={{ color: '#10b981' }} />
-                            <span>{item.contactPhone}</span>
+                            <span>{item.contactPhone || '—'}</span>
                           </div>
                         </div>
                       </div>
@@ -806,7 +850,7 @@ export const StarbooksPage = ({ darkMode, activePage = "starbooks" }) => {
                       }}>
                         <Users className="w-7 h-7 mx-auto mb-3" style={{ color: '#8b5cf6' }} />
                         <div className="text-3xl font-bold mb-1" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
-                          {item.beneficiaries.toLocaleString()}
+                          {(item.beneficiaries || item.total_users || 0).toLocaleString()}
                         </div>
                         <div className="text-xs font-bold uppercase tracking-wide" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
                           Beneficiaries
@@ -820,7 +864,7 @@ export const StarbooksPage = ({ darkMode, activePage = "starbooks" }) => {
                       }}>
                         <Activity className="w-7 h-7 mx-auto mb-3" style={{ color: '#10b981' }} />
                         <div className="text-3xl font-bold mb-1" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
-                          {item.uptime}%
+                          {item.uptime ?? '—'}%
                         </div>
                         <div className="text-xs font-bold uppercase tracking-wide" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
                           Uptime
@@ -838,7 +882,7 @@ export const StarbooksPage = ({ darkMode, activePage = "starbooks" }) => {
                   <div className="flex items-center gap-4 text-sm" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
                     <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: darkMode ? '#1e293b' : '#ffffff' }}>
                       <Calendar className="w-4 h-4" style={{ color: '#3b82f6' }} />
-                      <span className="font-medium">Deployed: {new Date(item.dateDeployed).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                      <span className="font-medium">Deployed: {item.dateDeployed || item.installation_date ? new Date(item.dateDeployed || item.installation_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</span>
                     </div>
                     <span className="font-mono font-bold px-3 py-1.5 rounded-lg" style={{ 
                       color: '#10b981',
@@ -881,9 +925,7 @@ export const StarbooksPage = ({ darkMode, activePage = "starbooks" }) => {
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (window.confirm(`Are you sure you want to delete ${item.location}?`)) {
-                          handleDeleteUnit(item.id);
-                        }
+                        setDeleteConfirm({ id: item.id, name: item.location });
                       }}
                       className="p-2.5 rounded-lg transition-all duration-300 hover:scale-110"
                       style={{
@@ -1148,6 +1190,54 @@ export const StarbooksPage = ({ darkMode, activePage = "starbooks" }) => {
                 </div>
               </div>
 
+              {/* Image Upload */}
+              <div>
+                <label className="block text-sm font-bold mb-2" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
+                  📷 Unit Photo (optional)
+                </label>
+                <div
+                  className="w-full rounded-xl border-2 border-dashed transition-all duration-200 cursor-pointer overflow-hidden"
+                  style={{ borderColor: darkMode ? '#334155' : '#cbd5e1', background: darkMode ? '#1e293b' : '#f8fafc' }}
+                  onClick={() => document.getElementById('starbooks-img-upload').click()}
+                >
+                  {newUnit.imagePreview ? (
+                    <div className="relative">
+                      <img src={newUnit.imagePreview} alt="Preview" className="w-full h-48 object-cover" />
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setNewUnit({ ...newUnit, imageFile: null, imagePreview: null }); }}
+                        className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center"
+                        style={{ background: 'rgba(0,0,0,0.6)', color: '#fff' }}
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-8 gap-2">
+                      <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: darkMode ? '#334155' : '#e2e8f0' }}>
+                        <span className="text-2xl">📷</span>
+                      </div>
+                      <p className="text-sm font-medium" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>Click to upload a photo</p>
+                      <p className="text-xs" style={{ color: darkMode ? '#475569' : '#94a3b8' }}>JPG, PNG, WEBP — max 5MB</p>
+                    </div>
+                  )}
+                </div>
+                <input
+                  id="starbooks-img-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    if (file.size > 5 * 1024 * 1024) { alert('File too large. Max 5MB.'); return; }
+                    const reader = new FileReader();
+                    reader.onloadend = () => setNewUnit({ ...newUnit, imageFile: file, imagePreview: reader.result });
+                    reader.readAsDataURL(file);
+                  }}
+                />
+              </div>
+
               {/* Additional Notes */}
               <div>
                 <label className="block text-sm font-bold mb-2" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
@@ -1236,7 +1326,7 @@ export const StarbooksPage = ({ darkMode, activePage = "starbooks" }) => {
                       {selectedItem.location}
                     </h2>
                     <p className="text-lg" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
-                      {selectedItem.serialNumber} • {selectedItem.municipality}, {selectedItem.province}
+                      {selectedItem.serialNumber || selectedItem.unit_code} • {selectedItem.municipality}, {selectedItem.province}
                     </p>
                   </div>
                 </div>
@@ -1260,15 +1350,21 @@ export const StarbooksPage = ({ darkMode, activePage = "starbooks" }) => {
                   
                   {/* Main Image */}
                   <div className="flex-1 mb-4 rounded-2xl overflow-hidden">
-                    <img
-                      src={selectedItem.images[currentImageIndex]}
-                      alt={`${selectedItem.location} - Image ${currentImageIndex + 1}`}
-                      className="w-full h-full object-cover"
-                    />
+                    {selectedItem.images?.[currentImageIndex] ? (
+                      <img
+                        src={selectedItem.images[currentImageIndex]}
+                        alt={`${selectedItem.location} - Image ${currentImageIndex + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center rounded-2xl" style={{ background: darkMode ? '#1e293b' : '#f1f5f9' }}>
+                        <Monitor className="w-16 h-16" style={{ color: darkMode ? '#334155' : '#cbd5e1' }} />
+                      </div>
+                    )}
                   </div>
 
                   {/* Image Thumbnails */}
-                  {selectedItem.images.length > 1 && (
+                  {(selectedItem.images?.length || 0) > 1 && (
                     <div className="flex gap-2">
                       {selectedItem.images.map((image, index) => (
                         <button
@@ -1278,11 +1374,7 @@ export const StarbooksPage = ({ darkMode, activePage = "starbooks" }) => {
                             currentImageIndex === index ? 'ring-4 ring-blue-500' : 'opacity-70 hover:opacity-100'
                           }`}
                         >
-                          <img
-                            src={image}
-                            alt={`Thumbnail ${index + 1}`}
-                            className="w-full h-full object-cover"
-                          />
+                          <img src={image} alt={`Thumbnail ${index + 1}`} className="w-full h-full object-cover" />
                         </button>
                       ))}
                     </div>
@@ -1318,7 +1410,7 @@ export const StarbooksPage = ({ darkMode, activePage = "starbooks" }) => {
                     <div className="flex items-center gap-2">
                       <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                       <span className="text-xl font-bold" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
-                        {selectedItem.rating}
+                        {selectedItem.rating ?? '—'}
                       </span>
                     </div>
                   </div>
@@ -1328,7 +1420,7 @@ export const StarbooksPage = ({ darkMode, activePage = "starbooks" }) => {
                     <div className="p-4 rounded-xl text-center" style={{ background: darkMode ? '#1e293b' : '#f8fafc' }}>
                       <Users className="w-8 h-8 mx-auto mb-2" style={{ color: '#8b5cf6' }} />
                       <div className="text-2xl font-bold" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
-                        {selectedItem.beneficiaries}
+                        {selectedItem.beneficiaries || selectedItem.total_users || 0}
                       </div>
                       <div className="text-sm" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
                         Beneficiaries
@@ -1337,7 +1429,7 @@ export const StarbooksPage = ({ darkMode, activePage = "starbooks" }) => {
                     <div className="p-4 rounded-xl text-center" style={{ background: darkMode ? '#1e293b' : '#f8fafc' }}>
                       <Activity className="w-8 h-8 mx-auto mb-2" style={{ color: '#10b981' }} />
                       <div className="text-2xl font-bold" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
-                        {selectedItem.uptime}%
+                        {selectedItem.uptime ?? '—'}%
                       </div>
                       <div className="text-sm" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
                         Uptime
@@ -1355,13 +1447,13 @@ export const StarbooksPage = ({ darkMode, activePage = "starbooks" }) => {
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full" style={{ background: '#004A98' }}></div>
                         <span style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
-                          Contact Person: <strong style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>{selectedItem.contactPerson}</strong>
+                          Contact Person: <strong style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>{selectedItem.contactPerson || '—'}</strong>
                         </span>
                       </div>
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full" style={{ background: '#10b981' }}></div>
                         <span style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
-                          Phone: <strong style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>{selectedItem.contactPhone}</strong>
+                          Phone: <strong style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>{selectedItem.contactPhone || '—'}</strong>
                         </span>
                       </div>
                       <div className="flex items-center gap-3">
@@ -1380,16 +1472,14 @@ export const StarbooksPage = ({ darkMode, activePage = "starbooks" }) => {
                       Technical Specifications
                     </h4>
                     <div className="grid grid-cols-1 gap-3">
-                      {Object.entries(selectedItem.specifications).map(([key, value]) => (
+                      {selectedItem.specifications ? Object.entries(selectedItem.specifications).map(([key, value]) => (
                         <div key={key} className="flex justify-between items-center p-3 rounded-lg" style={{ background: darkMode ? '#1e293b' : '#f8fafc' }}>
                           <span className="font-medium" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
                             {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}:
                           </span>
-                          <span className="font-bold" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
-                            {value}
-                          </span>
+                          <span className="font-bold" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>{value}</span>
                         </div>
-                      ))}
+                      )) : <p className="text-sm" style={{ color: darkMode ? '#475569' : '#94a3b8' }}>No specifications available</p>}
                     </div>
                   </div>
 
@@ -1404,13 +1494,13 @@ export const StarbooksPage = ({ darkMode, activePage = "starbooks" }) => {
                         <div className="flex justify-between items-center mb-2">
                           <span style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>Daily Average Users</span>
                           <span className="font-bold" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
-                            {selectedItem.usageStats.dailyAverage}
+                            {selectedItem.usageStats?.dailyAverage ?? selectedItem.total_sessions ?? '—'}
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
                           <span style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>Peak Hours</span>
                           <span className="font-bold" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>
-                            {selectedItem.usageStats.peakHours}
+                            {selectedItem.usageStats?.peakHours ?? '—'}
                           </span>
                         </div>
                       </div>
@@ -1424,7 +1514,7 @@ export const StarbooksPage = ({ darkMode, activePage = "starbooks" }) => {
                       Maintenance History
                     </h4>
                     <div className="space-y-3">
-                      {selectedItem.maintenanceHistory.map((record, index) => (
+                      {(selectedItem.maintenanceHistory || []).map((record, index) => (
                         <div key={index} className="p-4 rounded-xl border-l-4" style={{ 
                           background: darkMode ? '#1e293b' : '#f8fafc',
                           borderColor: record.type === 'Initial Setup' ? '#10b981' : '#f59e0b'
@@ -1453,6 +1543,18 @@ export const StarbooksPage = ({ darkMode, activePage = "starbooks" }) => {
           </div>
         </div>
       )}
+      
+      {/* Delete Confirmation Modal */}
+      <ConfirmDeleteModal
+        isOpen={!!deleteConfirm}
+        onClose={() => setDeleteConfirm(null)}
+        onConfirm={() => handleDeleteUnit(deleteConfirm.id)}
+        title="Delete STARBOOKS Unit?"
+        message="This will permanently remove this STARBOOKS unit from the inventory. This action cannot be undone."
+        itemName={deleteConfirm?.name}
+        confirmText="Delete Unit"
+        darkMode={darkMode}
+      />
     </div>
   );
 };

@@ -13,6 +13,9 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import dostLogo from "../../dost logo.png";
+import cestLogo from "../../Cest Logo.png";
+import starbooksLogo from "../../starbooks logo.png";
 
 const STARBOOKS_NAV_ITEMS = [
   { id: "starbooks", icon: Package, label: "Inventory" },
@@ -136,7 +139,7 @@ export const StarbooksSidebar = ({
                 }}
               >
                 <img 
-                  src="/src/dost logo.png" 
+                  src={dostLogo} 
                   alt="DOST Logo" 
                   className="w-full h-full object-contain" 
                 />
@@ -178,7 +181,7 @@ export const StarbooksSidebar = ({
                   style={logoStyles}
                 >
                   <img 
-                    src="/src/starbooks logo.png" 
+                    src={starbooksLogo} 
                     alt="STARBOOKS Logo" 
                     className="w-full h-full object-cover" 
                   />
@@ -212,7 +215,7 @@ export const StarbooksSidebar = ({
                 style={logoStyles}
               >
                 <img 
-                  src="/src/starbooks logo.png" 
+                  src={starbooksLogo} 
                   alt="STARBOOKS Logo" 
                   className="w-full h-full object-cover" 
                 />
@@ -347,7 +350,7 @@ export const StarbooksSidebar = ({
                     }}
                   >
                     <img 
-                      src="/src/Cest Logo.png" 
+                      src={cestLogo} 
                       alt="CEST Logo" 
                       className="w-full h-full object-contain relative z-10" 
                     />
@@ -554,7 +557,7 @@ export const StarbooksSidebar = ({
                       }}
                     >
                       <img 
-                        src="/src/Cest Logo.png" 
+                        src={cestLogo} 
                         alt="CEST Logo" 
                         className="w-full h-full object-contain relative z-10" 
                       />
@@ -686,7 +689,7 @@ export const StarbooksSidebar = ({
                         }}
                       >
                         <img 
-                          src="/src/Cest Logo.png" 
+                          src={cestLogo} 
                           alt="CEST" 
                           className="w-full h-full object-contain" 
                         />
@@ -730,3 +733,4 @@ export const StarbooksSidebar = ({
     </>
   );
 };
+
